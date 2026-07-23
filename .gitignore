@@ -1,0 +1,8 @@
+# Fern local generation output
+/generated/
+
+# OS / editor noise
+.DS_Store
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,2477 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AgentLine",
+    "description": "AgentLine gives every AI agent a real phone number, a human-like voice, and the ability to make and receive calls and SMS autonomously. This SDK covers the core developer surface: agents, numbers, calls, messages, events, webhooks, billing, and voice.",
+    "version": "0.3.0",
+    "summary": "Phone numbers, voice, and SMS for AI agents.",
+    "contact": {
+      "name": "AgentLine",
+      "url": "https://agentline.ai"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit"
+    }
+  },
+  "paths": {
+    "/v1/account/voice": {
+      "get": {
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Get Account Voice",
+        "description": "Get the current account-level default voice for AI phone agents.\n\nReturns which voice is used for all AI agents under this account\nunless overridden at the agent level or per-call. Controls how\nyour AI agents sound during phone conversations.",
+        "operationId": "get_account_voice",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "voice"
+        ],
+        "x-fern-sdk-method-name": "get"
+      },
+      "delete": {
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Reset Account Voice",
+        "description": "Reset account voice to the system default.\n\nRemoves the account-level voice override so all AI agents fall back\nto the system default voice during phone calls (unless they have\ntheir own voice_id configured).",
+        "operationId": "reset_account_voice",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "voice"
+        ],
+        "x-fern-sdk-method-name": "reset"
+      },
+      "patch": {
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Update Account Voice",
+        "description": "Set the account-level default voice for AI phone agents.\n\nThis becomes the default voice for ALL AI agents under this account,\ncontrolling how they sound on phone calls. Individual agents or\nspecific calls can still override this setting.\n\nVoice resolution priority:\n  1. Per-call voice_id (POST /v1/calls)\n  2. Agent voice_id (PATCH /v1/agents/{id})\n  3. Account default (this endpoint)  ← you are here\n  4. System default (Supportive Male)\n\nAccepts:\n  - A preset name: \"female-1\", \"female-2\", \"female-3\", \"male-1\", \"male-2\", \"male-3\"\n  - A Cartesia voice UUID: \"f786b574-daa5-4673-aa0c-cbe3e8534c02\"",
+        "operationId": "set_account_voice",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceSettingUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "voice"
+        ],
+        "x-fern-sdk-method-name": "set"
+      }
+    },
+    "/v1/agents": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "List Agents",
+        "description": "List all AI voice agents configured on your account.\n\nReturns every AI phone agent you've created, including their\nsystem prompts, voice settings, and associated phone numbers.\nUseful for checking which agents are ready to make or receive calls.",
+        "operationId": "list_agents",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "agents"
+        ],
+        "x-fern-sdk-method-name": "list"
+      },
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Create Agent",
+        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or Cartesia UUID\n  - transfer_number: Phone number to transfer calls to (e.g. a human operator)\n  - voicemail_message: Message the agent leaves if the call goes to voicemail",
+        "operationId": "create_agent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "agents"
+        ],
+        "x-fern-sdk-method-name": "create"
+      }
+    },
+    "/v1/agents/{agent_id}": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Get Agent",
+        "description": "Get details of a specific AI voice agent.\n\nReturns the agent's full configuration including system prompt,\nvoice settings, greeting, and transfer number.",
+        "operationId": "get_agent",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "agents"
+        ],
+        "x-fern-sdk-method-name": "get"
+      },
+      "patch": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Update Agent",
+        "description": "Update an AI voice agent's configuration.\n\nModify any combination of the agent's settings: system prompt,\nvoice, greeting, transfer number, or voicemail message.\nChanges take effect on the next call the agent handles.\nOnly include the fields you want to change — unset fields are preserved.",
+        "operationId": "update_agent",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "agents"
+        ],
+        "x-fern-sdk-method-name": "update"
+      },
+      "delete": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Delete Agent",
+        "description": "Delete an AI voice agent.\n\nPermanently removes the agent and detaches any phone numbers\nassigned to it. Detached numbers remain active on your account\nand can be reassigned to another agent.",
+        "operationId": "delete_agent",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "agents"
+        ],
+        "x-fern-sdk-method-name": "delete"
+      }
+    },
+    "/v1/billing/balance": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Balance",
+        "description": "Get your AI telephony account balance and rate card.\n\nReturns the current balance, currency, billing rates for calls\nand phone numbers, and how many call minutes or phone numbers\nthe balance can cover. Use this to check affordability before\nmaking calls or buying numbers for your AI agents.",
+        "operationId": "get_account_balance",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "billing"
+        ],
+        "x-fern-sdk-method-name": "get_balance"
+      }
+    },
+    "/v1/billing/expenditure": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Expenditure",
+        "description": "Get a detailed expenditure breakdown for AI telephony usage.\n\nShows total spend split by category (voice calls, phone number\nprovisioning, top-ups, refunds) with counts and averages.\nUseful for tracking how much your AI agents are spending on\nphone calls and phone numbers.",
+        "operationId": "get_expenditure_breakdown",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Time period: 'current_month', 'last_month', 'all_time', or 'YYYY-MM'",
+              "default": "current_month",
+              "title": "Period"
+            },
+            "description": "Time period: 'current_month', 'last_month', 'all_time', or 'YYYY-MM'"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "billing"
+        ],
+        "x-fern-sdk-method-name": "get_expenditure"
+      }
+    },
+    "/v1/billing/expenditure/calls": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Call Expenditure",
+        "description": "List individual call charges from AI agent phone calls.\n\nEach entry includes the voice call duration, cost, direction\n(inbound/outbound), phone numbers involved, and timestamp.\nShows exactly how much each AI agent call cost.",
+        "operationId": "get_call_charges",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of call charges to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of call charges to return (1-200)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of records to skip for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of records to skip for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "billing"
+        ],
+        "x-fern-sdk-method-name": "list_call_charges"
+      }
+    },
+    "/v1/billing/expenditure/numbers": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Number Expenditure",
+        "description": "List phone number provisioning charges.\n\nShows the cost of each phone number bought for your AI agents,\nincluding the number, country, and current status.",
+        "operationId": "get_number_charges",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of number charges to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of number charges to return (1-200)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of records to skip for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of records to skip for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "billing"
+        ],
+        "x-fern-sdk-method-name": "list_number_charges"
+      }
+    },
+    "/v1/billing/summary": {
+      "get": {
+        "tags": [
+          "Billing"
+        ],
+        "summary": "Get Spending Summary",
+        "description": "Month-over-month spending summary.\n\nReturns total debits grouped by month for trend analysis.",
+        "operationId": "get_spending_summary",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 24,
+              "minimum": 1,
+              "description": "Number of months to show",
+              "default": 6,
+              "title": "Months"
+            },
+            "description": "Number of months to show"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "billing"
+        ],
+        "x-fern-sdk-method-name": "get_summary"
+      }
+    },
+    "/v1/calls": {
+      "post": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Create Call",
+        "description": "Make an outbound phone call from your AI agent.\n\nInitiates a real phone call from the AI agent's phone number to the\nspecified destination. The agent uses its configured system prompt,\nvoice, and greeting to conduct the conversation autonomously.\n\nThe AI agent handles the entire call — speech-to-text, LLM reasoning,\nand text-to-speech — in real time. The call transcript is saved\nautomatically and can be retrieved via GET /v1/calls/{call_id}/transcript.\n\nRequest body:\n  - agent_id: the AI agent making the call\n  - to_number: destination phone number in E.164 format (e.g. \"+12125551234\")\n  - from_number_id: (optional) specific number to call from\n  - system_prompt: (optional) override the agent's default prompt for this call\n  - initial_greeting: (optional) override the agent's greeting for this call\n  - voice_id: (optional) override the voice for this call",
+        "operationId": "make_outbound_call",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "create"
+      },
+      "get": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "List Calls",
+        "description": "List voice calls made by your AI agents.\n\nReturns call history with optional filters by agent or status.\nEach entry includes direction (inbound/outbound), duration,\nphone numbers, and current status.\n\nFilters:\n  - agent_id: only calls for a specific AI agent\n  - status: \"initiated\", \"in-progress\", \"completed\", or \"failed\"",
+        "operationId": "list_calls",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter calls by AI agent ID",
+              "title": "Agent Id"
+            },
+            "description": "Filter calls by AI agent ID"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by call status: 'initiated', 'in-progress', 'completed', or 'failed'",
+              "title": "Status"
+            },
+            "description": "Filter by call status: 'initiated', 'in-progress', 'completed', or 'failed'"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of calls to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of calls to return (1-200)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of calls to skip for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of calls to skip for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "list"
+      }
+    },
+    "/v1/calls/{call_id}": {
+      "get": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get Call",
+        "description": "Get full details of a specific voice call.\n\nReturns the call's metadata including direction, phone numbers,\nstatus, duration, AI agent configuration used, and the full\nconversation transcript between the AI agent and the caller.",
+        "operationId": "get_call_details",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "call_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Call Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "get"
+      }
+    },
+    "/v1/calls/{call_id}/context": {
+      "post": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Push Call Context",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST facts here — do NOT only send the answer to WhatsApp/SMS/chat.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer sk_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"the facts/answer the voice agent should speak\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``message``,\n``reply``, ``text``, ``result``.\n\nReturns:\n    delivered=true, status=\"live\"     — voice agent will speak it now\n    delivered=true, status=\"buffered\" — caller moved on; held for their\n      next question (late pushes are NOT rejected)\n    HTTP 410                           — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
+        "operationId": "push_call_context",
+        "parameters": [
+          {
+            "name": "call_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Call Id"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Push token (alt to X-Push-Token header / body).",
+              "title": "Token"
+            },
+            "description": "Push token (alt to X-Push-Token header / body)."
+          },
+          {
+            "name": "X-Push-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Push-Token"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "push_context",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/calls/{call_id}/hangup": {
+      "post": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Hangup Call",
+        "description": "Hang up an active phone call.\n\nProgrammatically terminates an in-progress voice call. Use this\nwhen the AI agent needs to end the conversation, or to force-stop\na call that is no longer needed. The call's final transcript and\nbilling are processed automatically after hangup.",
+        "operationId": "hangup_call",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "call_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Call Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "hangup"
+      }
+    },
+    "/v1/calls/{call_id}/transcript": {
+      "get": {
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get Transcript",
+        "description": "Get the full conversation transcript for a call.\n\nReturns the complete speech-to-text transcript of the phone call,\nwith each turn labeled by role (\"human\" for the caller, \"assistant\"\nfor the AI agent). Useful for reviewing what was said on the call,\nextracting information, or auditing AI agent behavior.",
+        "operationId": "get_call_transcript",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "call_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Call Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "calls"
+        ],
+        "x-fern-sdk-method-name": "get_transcript"
+      }
+    },
+    "/v1/events": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "List Events",
+        "description": "Poll for telephony events from your AI agents.\n\nReturns pending events such as call completions, transcripts, and\nfailures. Events are consumed on retrieval (one-time read) — once\npolled, they are automatically deleted from the mailbox.\n\nYour AI agent should call this endpoint periodically to receive\nnotifications about completed calls and their transcripts.\n\nFilters:\n  - agent_id: only events for a specific AI agent\n  - event_type: e.g. \"call.completed\", \"call.failed\"",
+        "operationId": "poll_events",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter events by AI agent ID",
+              "title": "Agent Id"
+            },
+            "description": "Filter events by AI agent ID"
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by event type (e.g. 'call.completed', 'call.failed')",
+              "title": "Event Type"
+            },
+            "description": "Filter by event type (e.g. 'call.completed', 'call.failed')"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "description": "Maximum number of events to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of events to return (1-200)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "events"
+        ],
+        "x-fern-sdk-method-name": "poll"
+      }
+    },
+    "/v1/events/peek": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Peek Events",
+        "description": "Peek at pending telephony events without consuming them.\n\nReturns a preview of queued events (call completions, transcripts)\nwithout removing them from the mailbox. Useful for checking if\nthere are events to process before committing to retrieve them.",
+        "operationId": "peek_events",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter events by AI agent ID",
+              "title": "Agent Id"
+            },
+            "description": "Filter events by AI agent ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "description": "Maximum number of events to preview (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of events to preview (1-200)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "events"
+        ],
+        "x-fern-sdk-method-name": "peek"
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send Message",
+        "description": "Send an outbound SMS message from an AI agent's phone number.",
+        "operationId": "send_sms",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageSend"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "messages"
+        ],
+        "x-fern-sdk-method-name": "send"
+      },
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "List Messages",
+        "description": "List SMS messages sent and received by your AI agents.\n\nReturns message history with optional filters by AI agent or\nconversation. Each entry includes direction (inbound/outbound),\nphone numbers, message body, and delivery status.",
+        "operationId": "list_messages",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter messages by AI agent ID",
+              "title": "Agent Id"
+            },
+            "description": "Filter messages by AI agent ID"
+          },
+          {
+            "name": "conversation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter messages by conversation thread ID",
+              "title": "Conversation Id"
+            },
+            "description": "Filter messages by conversation thread ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Maximum number of messages to return (1-200)",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Maximum number of messages to return (1-200)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of messages to skip for pagination",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of messages to skip for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "messages"
+        ],
+        "x-fern-sdk-method-name": "list"
+      }
+    },
+    "/v1/messages/conversations": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "List Conversations",
+        "description": "List all SMS conversations for your AI agents.\n\nReturns conversation threads, optionally filtered by AI agent.\nEach conversation represents an ongoing SMS exchange between\nan AI agent's phone number and an external contact.",
+        "operationId": "list_conversations",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "messages"
+        ],
+        "x-fern-sdk-method-name": "list_conversations"
+      }
+    },
+    "/v1/numbers": {
+      "get": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "List Numbers",
+        "description": "List all phone numbers provisioned on your account.\n\nReturns every phone number you've bought for your AI agents,\nincluding which agent each number is assigned to, the number's\nstatus (active/released), and country.",
+        "operationId": "list_phone_numbers",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "numbers"
+        ],
+        "x-fern-sdk-method-name": "list"
+      },
+      "post": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Provision",
+        "description": "Buy a US phone number for your AI agent.\n\nSearches for and purchases a real US phone number from the telephony\nprovider, then attaches it to the specified AI agent. Once attached,\nthe agent can make outbound calls and receive inbound calls on this number.\n\nEach AI agent can only have ONE active phone number. Costs $2.00 per number.\n\nRequest body:\n  - agent_id: str (required) — the AI agent to assign this number to\n  - country: str (must be \"US\")\n  - number_type: \"local\" | \"tollfree\"\n  - area_code: preferred 3-digit US area code (e.g. \"212\" for NYC, \"415\" for SF)",
+        "operationId": "buy_phone_number",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumberProvision"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-sdk-group-name": [
+          "numbers"
+        ],
+        "x-fern-sdk-method-name": "buy"
+      }
+    },
+    "/v1/numbers/{number_id}": {
+      "get": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Get Number",
+        "description": "Get details of a specific phone number.\n\nReturns the phone number, its assigned AI agent, provider ID,\ncountry, and current status.",
+        "operationId": "get_phone_number",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "number_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Number Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "numbers"
+        ],
+        "x-fern-sdk-method-name": "get"
+      }
+    },
+    "/v1/numbers/{number_id}/reassign": {
+      "patch": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Reassign Number",
+        "description": "Reassign a phone number to a different AI agent.\n\nMoves an existing phone number from one AI agent to another.\nThe target agent must not already have an active number assigned.\nThe phone number remains active — only the agent ownership changes.",
+        "operationId": "reassign_number",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "number_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Number Id"
+            }
+          },
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "numbers"
+        ],
+        "x-fern-sdk-method-name": "reassign"
+      }
+    },
+    "/v1/voices": {
+      "get": {
+        "tags": [
+          "Voice"
+        ],
+        "summary": "Get Available Voices",
+        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nYou can use a preset name (e.g. \"female-1\", \"male-1\") or pass any\nvalid Cartesia voice UUID directly as a voice_id.",
+        "operationId": "list_available_voices",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "voice"
+        ],
+        "x-fern-sdk-method-name": "list",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/webhooks": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Get Webhooks",
+        "description": "List the account's per-agent webhook configuration(s).\n\nSecrets are **masked**. Pass `agent_id` to inspect a single agent's webhook.\nThe full secret is only ever shown once, on the POST that creates/replaces it.",
+        "operationId": "get_webhook",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inspect one agent's webhook (omit to list all)",
+              "title": "Agent Id"
+            },
+            "description": "Inspect one agent's webhook (omit to list all)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "webhooks"
+        ],
+        "x-fern-sdk-method-name": "list"
+      },
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Set Webhook",
+        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; POSTing again replaces it.\n\n- `agent_id`: the agent whose events this webhook receives (required).\n- `secret`:   HMAC signing secret. Omit to auto-generate.\n\nThe response returns the full `secret` **once** — store it to verify the\nsignature header on deliveries.",
+        "operationId": "set_webhook",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "webhooks"
+        ],
+        "x-fern-sdk-method-name": "set"
+      },
+      "delete": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Delete Webhook",
+        "description": "Remove an agent's webhook. No events for that agent will be delivered via\nHTTP afterwards; they remain available via GET /v1/events (the mailbox).",
+        "operationId": "delete_webhook",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Agent whose webhook to delete",
+              "title": "Agent Id"
+            },
+            "description": "Agent whose webhook to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "webhooks"
+        ],
+        "x-fern-sdk-method-name": "delete"
+      }
+    },
+    "/v1/webhooks/test": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Test Webhook",
+        "description": "Fire a signed `webhook.test` event to the agent's webhook.\n\nUses the exact same event bus (publish_event) that real telephony events use,\nso a successful delivery confirms the entire pipeline is wired correctly.\nReturns 404 if no webhook is configured for the agent.",
+        "operationId": "test_webhook",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Agent whose webhook to test",
+              "title": "Agent Id"
+            },
+            "description": "Agent whose webhook to test"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "webhooks"
+        ],
+        "x-fern-sdk-method-name": "test"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name for the AI voice agent"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Default instructions for the agent's personality and behavior on ALL calls (inbound and outbound). Can be overridden per-call via POST /v1/calls."
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting",
+            "description": "Default opening line spoken on ALL calls (inbound and outbound), e.g. 'Hello, how can I help you today?'. Can be overridden per-call via POST /v1/calls."
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or Cartesia voice UUID; defaults to system voice if not set"
+          },
+          "transfer_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer Number",
+            "description": "Phone number in E.164 format to transfer calls to (e.g. a human operator fallback)"
+          },
+          "voicemail_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicemail Message",
+            "description": "Message the AI agent leaves if the call goes to voicemail"
+          },
+          "owner_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Phone",
+            "description": "Owner's phone number in E.164 format (e.g. '+12125551234'). Calls from this number enter task mode — the agent treats speech as executable instructions."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "AgentCreate"
+      },
+      "AgentOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique agent identifier (e.g. 'agt_abc123')"
+          },
+          "account_id": {
+            "type": "string",
+            "title": "Account Id",
+            "description": "Account that owns this agent"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Display name of the AI voice agent"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Default system prompt for all calls (can be overridden per-call)"
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting",
+            "description": "Default greeting for all calls (can be overridden per-call)"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "TTS voice preset or Cartesia UUID"
+          },
+          "transfer_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer Number",
+            "description": "Phone number for call transfers"
+          },
+          "voicemail_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicemail Message",
+            "description": "Message left on voicemail"
+          },
+          "owner_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Phone",
+            "description": "Owner's phone number for task mode"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the agent was created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "account_id",
+          "name",
+          "created_at"
+        ],
+        "title": "AgentOut"
+      },
+      "AgentUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "New display name for the AI voice agent"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Updated default instructions for ALL future calls (does not affect calls already in progress)"
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting",
+            "description": "Updated default greeting for ALL future calls (inbound and outbound)"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "New TTS voice preset name or Cartesia voice UUID"
+          },
+          "transfer_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer Number",
+            "description": "Updated transfer phone number in E.164 format"
+          },
+          "voicemail_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicemail Message",
+            "description": "Updated voicemail message"
+          },
+          "owner_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Phone",
+            "description": "Updated owner phone number in E.164 format for task mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AgentUpdate"
+      },
+      "CallRequest": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "ID of the AI agent making the call (e.g. 'agt_abc123')"
+          },
+          "to_number": {
+            "type": "string",
+            "title": "To Number",
+            "description": "Destination phone number in E.164 format (e.g. '+12125551234')"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Per-call system prompt override. Replaces the agent's default prompt for this call ONLY. If omitted, the agent's default system_prompt is used."
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting",
+            "description": "Per-call greeting override. Replaces the agent's default greeting for this call ONLY. If omitted, the agent's default initial_greeting is used."
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "Override the TTS voice for this call: preset name (e.g. 'female-1') or Cartesia UUID"
+          },
+          "from_number_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Number Id",
+            "description": "Specific phone number ID to call from; defaults to the agent's assigned number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id",
+          "to_number"
+        ],
+        "title": "CallRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MessageSend": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "ID of the AI agent sending the SMS (e.g. 'agt_abc123')"
+          },
+          "to_number": {
+            "type": "string",
+            "title": "To Number",
+            "description": "Destination phone number in E.164 format (e.g. '+12125551234')"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "description": "SMS message text content"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url",
+            "description": "URL of media to attach (MMS)"
+          },
+          "from_number_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Number Id",
+            "description": "Specific phone number ID to send from; defaults to the agent's assigned number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id",
+          "to_number",
+          "body"
+        ],
+        "title": "MessageSend"
+      },
+      "NumberProvision": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "ID of the AI agent to assign this phone number to (e.g. 'agt_abc123')"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "description": "Country code for the phone number (currently only 'US' is supported)",
+            "default": "US"
+          },
+          "number_type": {
+            "type": "string",
+            "title": "Number Type",
+            "description": "Type of phone number: 'local' or 'tollfree'",
+            "default": "local"
+          },
+          "area_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Code",
+            "description": "Preferred 3-digit US area code (e.g. '212' for NYC, '415' for SF, '310' for LA)"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern",
+            "description": "Legacy digit pattern match (prefer area_code instead)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id"
+        ],
+        "title": "NumberProvision"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VoiceSettingUpdate": {
+        "properties": {
+          "voice_id": {
+            "type": "string",
+            "title": "Voice Id",
+            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or Cartesia voice UUID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "voice_id"
+        ],
+        "title": "VoiceSettingUpdate",
+        "description": "Set account-level default voice."
+      },
+      "WebhookConfig": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url",
+            "description": "HTTPS URL that will receive this agent's events as signed JSON POSTs. Setting this replaces any existing webhook for the agent."
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "ID of the agent whose events this webhook receives. Each agent may have at most one webhook."
+          },
+          "secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret",
+            "description": "Optional HMAC signing secret. Auto-generated if omitted. Used to verify the signature header on delivered payloads."
+          },
+          "signature_header": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Header",
+            "description": "Header name for the HMAC-SHA256 signature of the raw body. Defaults to 'X-Webhook-Signature' (natively verified by Hermes, OpenClaw, and other agent platforms). Set to 'X-Hub-Signature-256' for GitHub-style verification, or any custom header name your platform expects. Omit to keep the existing value when updating."
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "agent_id"
+        ],
+        "title": "WebhookConfig",
+        "description": "Body for POST /v1/webhooks (create or replace an agent's webhook)."
+      },
+      "WebhookCreated": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "Agent this webhook is scoped to"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "Configured webhook URL"
+          },
+          "secret": {
+            "type": "string",
+            "title": "Secret",
+            "description": "Full signing secret. Save it now — it is masked on subsequent reads."
+          },
+          "signature_header": {
+            "type": "string",
+            "title": "Signature Header",
+            "description": "Header name used for HMAC-SHA256 signature delivery."
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "When the webhook was last (re)configured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id",
+          "url",
+          "secret",
+          "signature_header"
+        ],
+        "title": "WebhookCreated",
+        "description": "Returned on POST — exposes the full secret this one time."
+      }
+    },
+    "securitySchemes": {
+      "API Key": {
+        "type": "http",
+        "description": "Pass your API key as a Bearer token: `Authorization: Bearer sk_live_xxx`",
+        "scheme": "bearer"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key (sk_live_...)",
+        "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer sk_live_..."
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.agentline.cloud",
+      "description": "Production"
+    }
+  ]
+}

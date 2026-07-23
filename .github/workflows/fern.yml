@@ -1,0 +1,84 @@
+name: Fern SDKs
+
+# Refreshes the curated OpenAPI spec and (re)builds + publishes the
+# `agentline` Python and Node SDKs via Fern.
+#
+# This repo is intentionally DECOUPLED from the AgentLine API server. It pulls
+# the raw OpenAPI from the live API (AGENTLINE_OPENAPI_URL, default
+# https://api.agentline.cloud/openapi.json), curates it, and generates SDKs.
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # daily refresh so SDKs track the deployed API
+  workflow_dispatch:
+    inputs:
+      openapi_url:
+        description: "Raw OpenAPI URL (overrides default)"
+        required: false
+  push:
+    branches: [main]
+    paths:
+      - "fern/**"
+      - "scripts/export_openapi.py"
+      - ".github/workflows/fern.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fern-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh-and-generate:
+    name: Refresh spec & generate SDKs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh curated OpenAPI spec
+        id: refresh
+        run: |
+          URL="${{ github.event.inputs.openapi_url }}"
+          python scripts/export_openapi.py ${URL:+--url "$URL"}
+        env:
+          AGENTLINE_OPENAPI_URL: ${{ secrets.AGENTLINE_OPENAPI_URL }}
+
+      - name: Commit refreshed spec (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fern/openapi/openapi.json
+          if git diff --cached --quiet; then
+            echo "No spec changes."
+          else
+            git commit -m "chore: refresh curated OpenAPI spec"
+            git push
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Fern CLI
+        run: npm install -g fern-api
+
+      - name: Fern check
+        run: fern check
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+
+      - name: Generate & publish SDKs
+        if: github.event_name != 'schedule' || true
+        run: fern generate --group sdks --log-level debug
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

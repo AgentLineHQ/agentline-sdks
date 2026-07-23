@@ -1,0 +1,65 @@
+# yaml-language-server: $schema=https://schema.buildwithfern.dev/generators-yml.json
+#
+# Fern configuration for the AgentLine SDKs.
+#
+# This repo turns the AgentLine OpenAPI spec (fern/openapi/openapi.json) into
+# two SDKs that mirror the AgentMail developer experience:
+#
+#   Python  ->  pip install agentline  ->  from agentline import AgentLine
+#   Node    ->  npm i agentline        ->  import { AgentLineClient } from "agentline"
+#
+# Each generator pushes the generated source to a SEPARATE GitHub repo and
+# publishes the package to its registry (PyPI / npm).
+#
+# Secrets (set them in the GitHub Actions secrets of THIS repo):
+#   FERN_TOKEN   – https://dashboard.buildwithfern.com  (create an org named `agentlinehq`)
+#   PYPI_TOKEN   – PyPI upload token
+#   NPM_TOKEN    – npm publish token
+#   GITHUB_TOKEN – automatic; Fern uses it to push to the two output repos
+#
+# Output repos (must exist, or be auto-created by Fern's GitHub App on first run):
+#   AgentLineHQ/agentline-python
+#   AgentLineHQ/agentline-node
+#
+# Generator pins (see hub.docker.com/r/fernapi/fern-*-sdk/tags):
+#   fern-python-sdk      -> 5.21.0
+#   fern-typescript-sdk  -> 3.83.0
+#
+# Bump with:  fern add fern-python-sdk  /  fern add fern-typescript-sdk
+
+api:
+  specs:
+    - openapi: openapi/openapi.json
+
+default-group: sdks
+
+groups:
+  sdks:
+    generators:
+      # ── Python SDK  → github.com/AgentLineHQ/agentline-python ──
+      - name: fernapi/fern-python-sdk
+        version: 5.21.0
+        github:
+          repository: AgentLineHQ/agentline-python
+          mode: push
+        output:
+          location: pypi
+          package-name: agentline
+          token: ${PYPI_TOKEN}
+        config:
+          client_class_name: AgentLine
+          timeout_in_seconds: 60
+
+      # ── Node / TypeScript SDK  → github.com/AgentLineHQ/agentline-node ──
+      - name: fernapi/fern-typescript-sdk
+        version: 3.83.0
+        github:
+          repository: AgentLineHQ/agentline-node
+          mode: push
+        output:
+          location: npm
+          package-name: agentline
+          token: ${NPM_TOKEN}
+        config:
+          client_class_name: AgentLineClient
+          bundle: false
