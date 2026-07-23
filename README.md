@@ -6,13 +6,18 @@ Source-of-truth repo for the official **AgentLine** SDKs, generated with
 
 | Language | Install | Usage |
 |----------|---------|-------|
-| Python | `pip install agentline` | `from agentline import AgentLine` |
+| Python | `pip install agentline-ai` | `from agentline_ai import AgentLine` |
 | Node / TypeScript | `npm i agentline` | `import { AgentLineClient } from "agentline"` |
+
+> PyPI `agentline` is already taken, so the Python package is `agentline-ai`
+> (import `agentline_ai`). npm `agentline` is free. Adjust `package-name` in
+> [`fern/generators.yml`](fern/generators.yml) if you own the name or prefer
+> another.
 
 The generated code lives in two **separate repos** (one per language) and is
 published to PyPI / npm automatically:
 
-- `AgentLineHQ/agentline-python` → PyPI `agentline`
+- `AgentLineHQ/agentline-python` → PyPI `agentline-ai`
 - `AgentLineHQ/agentline-node` → npm `agentline`
 
 This repo only holds the **generation config** + the curated OpenAPI spec — it
@@ -41,7 +46,7 @@ top-ups) are excluded so they never reach the SDK.
 ## The resulting developer experience
 
 ```python
-from agentline import AgentLine
+from agentline_ai import AgentLine
 
 client = AgentLine(api_key="sk_live_...")
 

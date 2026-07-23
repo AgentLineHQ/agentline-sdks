@@ -5,8 +5,12 @@
 # This repo turns the AgentLine OpenAPI spec (fern/openapi/openapi.json) into
 # two SDKs that mirror the AgentMail developer experience:
 #
-#   Python  ->  pip install agentline  ->  from agentline import AgentLine
-#   Node    ->  npm i agentline        ->  import { AgentLineClient } from "agentline"
+#   Python  ->  pip install agentline-ai  ->  from agentline_ai import AgentLine
+#   Node    ->  npm i agentline           ->  import { AgentLineClient } from "agentline"
+#
+# NOTE: PyPI `agentline` is already taken, so the Python distribution is
+# `agentline-ai` (import `agentline_ai`). Change `package-name` below if you
+# own `agentline` on PyPI or prefer another name.
 #
 # Each generator pushes the generated source to a SEPARATE GitHub repo and
 # publishes the package to its registry (PyPI / npm).
@@ -44,7 +48,7 @@ groups:
           mode: push
         output:
           location: pypi
-          package-name: agentline
+          package-name: agentline-ai
           token: ${PYPI_TOKEN}
         config:
           client_class_name: AgentLine
