@@ -140,7 +140,7 @@ def build_spec(raw: dict, server_url: str) -> dict:
             "surface: agents, numbers, calls, messages, events, webhooks, "
             "billing, and voice."
         ),
-        "contact": {"name": "AgentLine", "url": "https://agentline.ai"},
+        "contact": {"name": "AgentLine", "url": "https://agentline.cloud"},
         "license": {"name": "MIT", "url": "https://opensource.org/license/mit"},
     }
 
