@@ -35,7 +35,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -62,7 +62,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -109,7 +109,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -138,7 +138,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -187,7 +187,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -206,7 +206,7 @@
         "operationId": "get_agent",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -254,7 +254,7 @@
         "operationId": "update_agent",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -312,7 +312,7 @@
         "operationId": "delete_agent",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -372,7 +372,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -391,7 +391,7 @@
         "operationId": "get_expenditure_breakdown",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -444,7 +444,7 @@
         "operationId": "get_call_charges",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -512,7 +512,7 @@
         "operationId": "get_number_charges",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -580,7 +580,7 @@
         "operationId": "get_spending_summary",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -635,7 +635,7 @@
         "operationId": "make_outbound_call",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "requestBody": {
@@ -682,7 +682,7 @@
         "operationId": "list_calls",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -786,7 +786,7 @@
         "operationId": "get_call_details",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -917,7 +917,7 @@
         "x-fern-sdk-method-name": "push_context",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ]
       }
@@ -932,7 +932,7 @@
         "operationId": "hangup_call",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -982,7 +982,7 @@
         "operationId": "get_call_transcript",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1032,7 +1032,7 @@
         "operationId": "poll_events",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1122,7 +1122,7 @@
         "operationId": "peek_events",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1194,7 +1194,7 @@
         "operationId": "send_sms",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "requestBody": {
@@ -1241,7 +1241,7 @@
         "operationId": "list_messages",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1345,7 +1345,7 @@
         "operationId": "list_conversations",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1412,7 +1412,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -1459,7 +1459,7 @@
         },
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -1478,7 +1478,7 @@
         "operationId": "get_phone_number",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1528,7 +1528,7 @@
         "operationId": "reassign_number",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1601,7 +1601,7 @@
         "x-fern-sdk-method-name": "list",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ]
       }
@@ -1616,7 +1616,7 @@
         "operationId": "get_webhook",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1673,7 +1673,7 @@
         "operationId": "set_webhook",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "requestBody": {
@@ -1722,7 +1722,7 @@
         "operationId": "delete_webhook",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -1774,7 +1774,7 @@
         "operationId": "test_webhook",
         "security": [
           {
-            "BearerAuth": []
+            "API Key": []
           }
         ],
         "parameters": [
@@ -2654,16 +2654,11 @@
     "securitySchemes": {
       "API Key": {
         "type": "http",
-        "description": "Pass your API key as a Bearer token: `Authorization: Bearer sk_live_xxx`",
-        "scheme": "bearer"
-      },
-      "BearerAuth": {
-        "type": "http",
+        "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer sk_live_...",
         "scheme": "bearer",
         "bearerFormat": "API key (sk_live_...)",
-        "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer sk_live_...",
         "x-fern-bearer": {
-          "name": "api_key",
+          "name": "apiKey",
           "env": "AGENTLINE_API_KEY"
         }
       }
@@ -2671,7 +2666,7 @@
   },
   "security": [
     {
-      "BearerAuth": []
+      "API Key": []
     }
   ],
   "servers": [

@@ -117,21 +117,37 @@ def build_spec(raw: dict, server_url: str) -> dict:
     spec = json.loads(json.dumps(raw))  # deep copy; never mutate input
 
     components = spec.setdefault("components", {})
-    components.setdefault("securitySchemes", {})["BearerAuth"] = {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "API key (sk_live_...)",
-        "description": (
-            "AgentLine API key. Get one via the email OTP flow "
-            "(POST /v1/auth/otp then POST /v1/auth/verify). "
-            "Pass as: Authorization: Bearer sk_live_..."
-        ),
-        # Fern: name the constructor credential `api_key` (default is `token`)
-        # and let it fall back to the AGENTLINE_API_KEY env var.
-        "x-fern-bearer": {"name": "api_key", "env": "AGENTLINE_API_KEY"},
-    }
+    schemes = components.setdefault("securitySchemes", {})
 
-    spec["security"] = [{"BearerAuth": []}]
+    # Reuse the raw spec's existing bearer scheme if present (Fern dedupes
+    # structurally identical schemes and keeps the first, so adding a second
+    # "BearerAuth" would silently drop our x-fern-bearer extension).
+    bearer_name = next(
+        (
+            name
+            for name, sch in schemes.items()
+            if isinstance(sch, dict)
+            and sch.get("type") == "http"
+            and sch.get("scheme") == "bearer"
+        ),
+        None,
+    )
+    if bearer_name is None:
+        bearer_name = "BearerAuth"
+        schemes[bearer_name] = {"type": "http", "scheme": "bearer"}
+
+    bearer = schemes[bearer_name]
+    bearer["bearerFormat"] = "API key (sk_live_...)"
+    bearer["description"] = (
+        "AgentLine API key. Get one via the email OTP flow "
+        "(POST /v1/auth/otp then POST /v1/auth/verify). "
+        "Pass as: Authorization: Bearer sk_live_..."
+    )
+    # Fern: name the constructor credential `apiKey` (default is `token`)
+    # and let it fall back to the AGENTLINE_API_KEY env var.
+    bearer["x-fern-bearer"] = {"name": "apiKey", "env": "AGENTLINE_API_KEY"}
+
+    spec["security"] = [{bearer_name: []}]
     spec["servers"] = [{"url": server_url, "description": "Production"}]
     spec["info"] = {
         **spec.get("info", {}),
@@ -178,7 +194,7 @@ def build_spec(raw: dict, server_url: str) -> dict:
             if op_id in PUBLIC_OPERATIONS:
                 op["security"] = []
             else:
-                op["security"] = [{"BearerAuth": []}]
+                op["security"] = [{bearer_name: []}]
                 rb = op.get("requestBody")
                 if isinstance(rb, dict):
                     rb.setdefault("required", True)
