@@ -126,6 +126,9 @@ def build_spec(raw: dict, server_url: str) -> dict:
             "(POST /v1/auth/otp then POST /v1/auth/verify). "
             "Pass as: Authorization: Bearer sk_live_..."
         ),
+        # Fern: name the constructor credential `api_key` (default is `token`)
+        # and let it fall back to the AGENTLINE_API_KEY env var.
+        "x-fern-bearer": {"name": "api_key", "env": "AGENTLINE_API_KEY"},
     }
 
     spec["security"] = [{"BearerAuth": []}]
