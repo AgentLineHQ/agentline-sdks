@@ -34,7 +34,7 @@ AgentLine API  (serves /openapi.json — the raw spec)
 fern/openapi/openapi.json  (curated spec — committed)
         │
         ▼  fern generate  (reads generators.yml)
-        ├─► github.com/AgentLineHQ/agentline-python  →  PyPI `agentline`
+        ├─► github.com/AgentLineHQ/agentline-python  →  PyPI `agentline-ai`
         └─► github.com/AgentLineHQ/agentline-node    →  npm `agentline`
 ```
 

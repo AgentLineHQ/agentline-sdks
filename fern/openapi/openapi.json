@@ -877,22 +877,6 @@
               ],
               "title": "X-Push-Token"
             }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
           }
         ],
         "requestBody": {
@@ -2186,6 +2170,173 @@
         ],
         "title": "CallRequest"
       },
+      "FeedbackCategory": {
+        "type": "string",
+        "enum": [
+          "bug",
+          "feature_request",
+          "difficulty",
+          "feedback"
+        ],
+        "title": "FeedbackCategory"
+      },
+      "FeedbackCreate": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/FeedbackCategory",
+            "description": "Type of feedback: 'bug' (something broken / not working), 'feature_request' (want a new capability), 'difficulty' (hard or confusing to use), or 'feedback' (general comment or praise)"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Detailed description of the feedback, issue, or request. For bugs, include what you expected vs. what actually happened."
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject",
+            "description": "Short summary title for the feedback (optional)"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/FeedbackSeverity",
+            "description": "Impact level, mainly relevant for bugs: 'low', 'normal', 'high', or 'critical'",
+            "default": "normal"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "ID of the AI agent this feedback relates to, if applicable"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email",
+            "description": "Email address for follow-up about this feedback (optional)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "message"
+        ],
+        "title": "FeedbackCreate"
+      },
+      "FeedbackOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique feedback identifier (e.g. 'fb_abc123')"
+          },
+          "account_id": {
+            "type": "string",
+            "title": "Account Id",
+            "description": "Account that submitted this feedback"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "description": "Feedback type: 'bug', 'feature_request', 'difficulty', or 'feedback'"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Full feedback message"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject",
+            "description": "Short summary title"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "Impact level: 'low', 'normal', 'high', or 'critical'"
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "Related AI agent ID, if any"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email",
+            "description": "Follow-up email, if provided"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current status: 'open', 'acknowledged', 'in_progress', 'resolved', or 'closed'"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the feedback was submitted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "account_id",
+          "category",
+          "message",
+          "severity",
+          "status",
+          "created_at"
+        ],
+        "title": "FeedbackOut"
+      },
+      "FeedbackSeverity": {
+        "type": "string",
+        "enum": [
+          "low",
+          "normal",
+          "high",
+          "critical"
+        ],
+        "title": "FeedbackSeverity"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2299,6 +2450,36 @@
         ],
         "title": "NumberProvision"
       },
+      "OtpRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "Email address to send the one-time code to. The same email identifies the account for both agents and humans."
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "OtpRequest"
+      },
+      "TopupRequest": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount",
+            "description": "USD amount to top up (e.g. 5.00). 1 USDC ≈ $1.00."
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "title": "TopupRequest"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -2338,6 +2519,27 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VerifyRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "Email address the one-time code was sent to"
+          },
+          "otp": {
+            "type": "string",
+            "title": "Otp",
+            "description": "One-time code received via email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "otp"
+        ],
+        "title": "VerifyRequest"
       },
       "VoiceSettingUpdate": {
         "properties": {

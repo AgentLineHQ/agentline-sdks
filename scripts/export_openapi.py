@@ -157,6 +157,20 @@ def build_spec(raw: dict, server_url: str) -> dict:
             op["x-fern-sdk-group-name"] = [group]
             op["x-fern-sdk-method-name"] = fn_name
 
+            # Drop any explicit `authorization` header param — auth is handled
+            # by the BearerAuth security scheme (avoids a Fern conflict warning).
+            params = op.get("parameters")
+            if isinstance(params, list):
+                op["parameters"] = [
+                    p
+                    for p in params
+                    if not (
+                        isinstance(p, dict)
+                        and p.get("in") == "header"
+                        and str(p.get("name", "")).lower() == "authorization"
+                    )
+                ]
+
             if op_id in PUBLIC_OPERATIONS:
                 op["security"] = []
             else:

@@ -75,7 +75,6 @@ jobs:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
 
       - name: Generate & publish SDKs
-        if: github.event_name != 'schedule' || true
         run: fern generate --group sdks --log-level debug
         env:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
