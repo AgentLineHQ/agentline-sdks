@@ -97,7 +97,8 @@ def load_raw(url: str | None, path: str | None) -> dict | None:
         print(f"Reading raw OpenAPI from file: {path}")
         return json.loads(Path(path).read_text(encoding="utf-8"))
 
-    target = url or os.environ.get("AGENTLINE_OPENAPI_URL", DEFAULT_URL)
+    # Empty-string env (e.g. unset GitHub secret rendered as "") counts as unset.
+    target = url or os.environ.get("AGENTLINE_OPENAPI_URL") or DEFAULT_URL
     print(f"Fetching raw OpenAPI from: {target}")
     try:
         with urllib.request.urlopen(target, timeout=30) as resp:

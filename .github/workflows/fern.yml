@@ -47,7 +47,7 @@ jobs:
           URL="${{ github.event.inputs.openapi_url }}"
           python scripts/export_openapi.py ${URL:+--url "$URL"}
         env:
-          AGENTLINE_OPENAPI_URL: ${{ secrets.AGENTLINE_OPENAPI_URL }}
+          AGENTLINE_OPENAPI_URL: ${{ secrets.AGENTLINE_OPENAPI_URL || 'https://api.agentline.cloud/openapi.json' }}
 
       - name: Commit refreshed spec (if changed)
         run: |
