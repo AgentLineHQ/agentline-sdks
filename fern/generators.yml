@@ -42,7 +42,7 @@ groups:
     generators:
       # ── Python SDK  → github.com/AgentLineHQ/agentline-python ──
       - name: fernapi/fern-python-sdk
-        version: 5.21.0
+        version: 5.22.1
         github:
           repository: AgentLineHQ/agentline-python
           mode: push
@@ -52,6 +52,7 @@ groups:
           token: ${PYPI_TOKEN}
         config:
           client_class_name: AgentLine
+          package_name: agentline_ai
           timeout_in_seconds: 60
 
       # ── Node / TypeScript SDK  → github.com/AgentLineHQ/agentline-node ──
@@ -65,5 +66,6 @@ groups:
           package-name: agentline
           token: ${NPM_TOKEN}
         config:
-          client_class_name: AgentLineClient
           bundle: false
+          naming:
+            client: AgentLineClient
