@@ -35,7 +35,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -62,7 +62,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -109,7 +109,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -138,7 +138,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -187,7 +187,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -206,7 +206,7 @@
         "operationId": "get_agent",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -254,7 +254,7 @@
         "operationId": "update_agent",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -312,7 +312,7 @@
         "operationId": "delete_agent",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -372,7 +372,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -391,7 +391,7 @@
         "operationId": "get_expenditure_breakdown",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -444,7 +444,7 @@
         "operationId": "get_call_charges",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -512,7 +512,7 @@
         "operationId": "get_number_charges",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -580,7 +580,7 @@
         "operationId": "get_spending_summary",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -635,7 +635,7 @@
         "operationId": "make_outbound_call",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "requestBody": {
@@ -682,7 +682,7 @@
         "operationId": "list_calls",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -786,7 +786,7 @@
         "operationId": "get_call_details",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -917,7 +917,7 @@
         "x-fern-sdk-method-name": "push_context",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ]
       }
@@ -932,7 +932,7 @@
         "operationId": "hangup_call",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -982,7 +982,7 @@
         "operationId": "get_call_transcript",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1032,7 +1032,7 @@
         "operationId": "poll_events",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1122,7 +1122,7 @@
         "operationId": "peek_events",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1194,7 +1194,7 @@
         "operationId": "send_sms",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "requestBody": {
@@ -1241,7 +1241,7 @@
         "operationId": "list_messages",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1345,7 +1345,7 @@
         "operationId": "list_conversations",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1412,7 +1412,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -1459,7 +1459,7 @@
         },
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "x-fern-sdk-group-name": [
@@ -1478,7 +1478,7 @@
         "operationId": "get_phone_number",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1528,7 +1528,7 @@
         "operationId": "reassign_number",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1601,7 +1601,7 @@
         "x-fern-sdk-method-name": "list",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ]
       }
@@ -1616,7 +1616,7 @@
         "operationId": "get_webhook",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1673,7 +1673,7 @@
         "operationId": "set_webhook",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "requestBody": {
@@ -1722,7 +1722,7 @@
         "operationId": "delete_webhook",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -1774,7 +1774,7 @@
         "operationId": "test_webhook",
         "security": [
           {
-            "API Key": []
+            "API Key or OAuth": []
           }
         ],
         "parameters": [
@@ -2652,7 +2652,7 @@
       }
     },
     "securitySchemes": {
-      "API Key": {
+      "API Key or OAuth": {
         "type": "http",
         "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer sk_live_...",
         "scheme": "bearer",
@@ -2666,7 +2666,7 @@
   },
   "security": [
     {
-      "API Key": []
+      "API Key or OAuth": []
     }
   ],
   "servers": [
