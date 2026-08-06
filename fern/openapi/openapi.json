@@ -832,7 +832,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST facts here — do NOT only send the answer to WhatsApp/SMS/chat.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"the facts/answer the voice agent should speak\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``message``,\n``reply``, ``text``, ``result``.\n\nReturns:\n    delivered=true, status=\"live\"     — voice agent will speak it now\n    delivered=true, status=\"buffered\" — caller moved on; held for their\n      next question (late pushes are NOT rejected)\n    HTTP 410                           — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST a concise caller-ready response here. It is spoken verbatim and stored\nas the assistant turn for later conversation context.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"the exact short response the caller should hear\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -861,6 +861,24 @@
               "title": "Token"
             },
             "description": "Push token (alt to X-Push-Token header / body)."
+          },
+          {
+            "name": "turn_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Turn ID from call.utterance.",
+              "title": "Turn Id"
+            },
+            "description": "Turn ID from call.utterance."
           },
           {
             "name": "X-Push-Token",
