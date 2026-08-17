@@ -308,7 +308,7 @@
           "Agents"
         ],
         "summary": "Delete Agent",
-        "description": "Delete an AI voice agent.\n\nPermanently removes the agent and detaches any phone numbers\nassigned to it. Detached numbers remain active on your account\nand can be reassigned to another agent.",
+        "description": "Delete an AI voice agent.\n\nPermanently removes the agent, its calls, messages, and conversations,\nand detaches any phone numbers assigned to it. Detached numbers remain\nactive on your account and can be reassigned to another agent.",
         "operationId": "delete_agent",
         "security": [
           {
@@ -1097,6 +1097,7 @@
             "schema": {
               "type": "integer",
               "maximum": 200,
+              "minimum": 1,
               "description": "Maximum number of events to return (1-200)",
               "default": 50,
               "title": "Limit"
@@ -1169,6 +1170,7 @@
             "schema": {
               "type": "integer",
               "maximum": 200,
+              "minimum": 1,
               "description": "Maximum number of events to preview (1-200)",
               "default": 50,
               "title": "Limit"
