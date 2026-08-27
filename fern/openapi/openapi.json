@@ -358,7 +358,7 @@
           "Billing"
         ],
         "summary": "Get Balance",
-        "description": "Get your AI telephony account balance and rate card.\n\nReturns the current balance, currency, billing rates for calls\nand phone numbers, and how many call minutes or phone numbers\nthe balance can cover. Use this to check affordability before\nmaking calls or buying numbers for your AI agents.",
+        "description": "Get your AI telephony account balance and rate card.\n\nReturns the current balance, currency, billing rates for calls,\nphone numbers, and inbound SMS, plus what the balance can cover.\nUse this to check affordability before paid telephony operations.",
         "operationId": "get_account_balance",
         "responses": {
           "200": {
