@@ -1926,6 +1926,38 @@
         ],
         "title": "AgentCreate"
       },
+      "AgentIdPollRequest": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "description": "Session id returned by /v1/auth/agentid/start"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id"
+        ],
+        "title": "AgentIdPollRequest"
+      },
+      "AgentIdStartRequest": {
+        "properties": {
+          "login_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Login Hint",
+            "description": "Optional AgentMail inbox, sent verbatim to AgentID as login_hint. Do not lowercase. Not required."
+          }
+        },
+        "type": "object",
+        "title": "AgentIdStartRequest"
+      },
       "AgentOut": {
         "properties": {
           "id": {
