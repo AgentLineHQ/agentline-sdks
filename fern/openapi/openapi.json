@@ -2402,6 +2402,398 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "KeylessAgentUpdate": {
+        "properties": {
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt"
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id"
+          },
+          "transfer_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer Number"
+          },
+          "voicemail_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicemail Message"
+          },
+          "owner_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Phone"
+          }
+        },
+        "type": "object",
+        "title": "KeylessAgentUpdate",
+        "description": "Partial agent update — only provided fields change (mirrors classic PATCH /v1/agents)."
+      },
+      "KeylessBuyBody": {
+        "properties": {
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Name",
+            "description": "Display name for the voice agent"
+          },
+          "system_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Prompt",
+            "description": "Personality/behavior instructions spoken on ALL calls"
+          },
+          "initial_greeting": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Greeting",
+            "description": "Opening line spoken when a call connects"
+          },
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "TTS voice preset (e.g. 'female-1') or Cartesia UUID"
+          },
+          "transfer_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfer Number",
+            "description": "E.164 fallback number for call transfers"
+          },
+          "voicemail_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voicemail Message",
+            "description": "Message left if the call goes to voicemail"
+          },
+          "owner_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Phone",
+            "description": "Owner's E.164 phone — calls from it enter task mode"
+          },
+          "country": {
+            "type": "string",
+            "title": "Country",
+            "description": "Country code (only 'US' supported)",
+            "default": "US"
+          },
+          "number_type": {
+            "type": "string",
+            "title": "Number Type",
+            "description": "'local' or 'tollfree'",
+            "default": "local"
+          },
+          "area_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area Code",
+            "description": "Preferred 3-digit US area code"
+          }
+        },
+        "type": "object",
+        "title": "KeylessBuyBody"
+      },
+      "KeylessCallBody": {
+        "properties": {
+          "from_number": {
+            "type": "string",
+            "title": "From Number",
+            "description": "Your wallet-owned number (E.164, e.g. '+12125551234')"
+          },
+          "to_number": {
+            "type": "string",
+            "title": "To Number",
+            "description": "Destination phone number in E.164 format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_number",
+          "to_number"
+        ],
+        "title": "KeylessCallBody"
+      },
+      "KeylessCreditBody": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "description": "USD credit to buy (1.00–1000.00). 1 USDC ≈ $1.00."
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "title": "KeylessCreditBody"
+      },
+      "KeylessEventsBody": {
+        "properties": {
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "event_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 200.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "lease_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Token"
+          }
+        },
+        "type": "object",
+        "title": "KeylessEventsBody",
+        "description": "Optional POST body for polling events (GET works identically)."
+      },
+      "KeylessListBody": {
+        "properties": {
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number",
+            "description": "Filter to one owned number"
+          },
+          "lease_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Token",
+            "description": "lease_... token (free auth alternative)"
+          }
+        },
+        "type": "object",
+        "title": "KeylessListBody",
+        "description": "Optional POST body for listing numbers (GET works identically)."
+      },
+      "KeylessRenewBody": {
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number",
+            "description": "Your wallet-owned number to renew (E.164)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phone_number"
+        ],
+        "title": "KeylessRenewBody"
+      },
+      "KeylessTranscriptBody": {
+        "properties": {
+          "lease_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Token"
+          }
+        },
+        "type": "object",
+        "title": "KeylessTranscriptBody",
+        "description": "Optional POST body for transcripts (GET works identically)."
+      },
+      "KeylessWebhookBody": {
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number",
+            "description": "Your wallet-owned number whose agent gets the webhook"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "HTTPS URL receiving the agent's events as signed JSON POSTs"
+          },
+          "secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret",
+            "description": "HMAC signing secret (auto-generated if omitted)"
+          },
+          "signature_header": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Header",
+            "description": "HMAC header name (default 'X-Webhook-Signature')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phone_number",
+          "url"
+        ],
+        "title": "KeylessWebhookBody"
+      },
       "MessageSend": {
         "properties": {
           "agent_id": {
@@ -2516,6 +2908,25 @@
           "email"
         ],
         "title": "OtpRequest"
+      },
+      "PayDiscoveryBody": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "Top-up amount in USD to advertise requirements for."
+          }
+        },
+        "type": "object",
+        "title": "PayDiscoveryBody",
+        "description": "Optional POST body for the discovery probe (GET works identically)."
       },
       "TopupRequest": {
         "properties": {
