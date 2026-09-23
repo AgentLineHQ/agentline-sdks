@@ -151,7 +151,7 @@
           "Agents"
         ],
         "summary": "Create Agent",
-        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or Cartesia UUID\n  - transfer_number: Phone number to transfer calls to (e.g. a human operator)\n  - voicemail_message: Message the agent leaves if the call goes to voicemail",
+        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or Cartesia UUID\n  - transfer_number: Must be the owner phone. Live calls transfer only to owner_phone.\n  - voicemail_message: Message the agent leaves if the call goes to voicemail\n  - owner_phone: Owner's E.164 number. Task mode, and the only transfer destination.",
         "operationId": "create_agent",
         "requestBody": {
           "content": {
@@ -832,7 +832,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST a concise caller-ready response here. It is spoken verbatim and stored\nas the assistant turn for later conversation context.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"the exact short response the caller should hear\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST facts for the hosted voice to speak. Send ``disposition: progress``\nas the work advances; the turn stays open. ``done``, ``failed``, or\n``facts`` settles it. The hosted voice speaks that text exactly and keeps it\nfor the rest of the call.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"the exact short response the caller should hear\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -1892,7 +1892,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "Phone number in E.164 format to transfer calls to (e.g. a human operator fallback)"
+            "description": "Ignored unless it is the owner phone. Live transfers always dial owner_phone; a different number is rejected."
           },
           "voicemail_message": {
             "anyOf": [
@@ -1916,7 +1916,7 @@
               }
             ],
             "title": "Owner Phone",
-            "description": "Owner's phone number in E.164 format (e.g. '+12125551234'). Calls from this number enter task mode — the agent treats speech as executable instructions."
+            "description": "Owner's phone number in E.164 format (e.g. '+12125551234'). Calls from this number enter task mode. This is also the only number a live call can be transferred to."
           }
         },
         "additionalProperties": false,
@@ -2021,7 +2021,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "Phone number for call transfers"
+            "description": "Always the owner phone. Live calls transfer only here."
           },
           "voicemail_message": {
             "anyOf": [
@@ -2045,7 +2045,7 @@
               }
             ],
             "title": "Owner Phone",
-            "description": "Owner's phone number for task mode"
+            "description": "Owner's phone number for task mode and the only live-call transfer destination"
           },
           "created_at": {
             "type": "string",
@@ -2123,7 +2123,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "Updated transfer phone number in E.164 format"
+            "description": "Must match owner_phone. A different number is rejected; setting owner_phone updates this to the same number."
           },
           "voicemail_message": {
             "anyOf": [
@@ -2147,7 +2147,7 @@
               }
             ],
             "title": "Owner Phone",
-            "description": "Updated owner phone number in E.164 format for task mode"
+            "description": "Updated owner phone in E.164. Also becomes the only live-call transfer destination."
           }
         },
         "additionalProperties": false,
@@ -2546,7 +2546,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "E.164 fallback number for call transfers"
+            "description": "Must be the owner phone. Live transfers dial only owner_phone."
           },
           "voicemail_message": {
             "anyOf": [
@@ -2570,7 +2570,7 @@
               }
             ],
             "title": "Owner Phone",
-            "description": "Owner's E.164 phone — calls from it enter task mode"
+            "description": "Owner's E.164 phone. Calls from it enter task mode, and it is the only live-call transfer destination."
           },
           "country": {
             "type": "string",
