@@ -1,8 +1,9 @@
 name: Fern SDKs
 
 # Refreshes the curated OpenAPI spec and regenerates the Python and Node SDKs.
-# Registry publishing is handled by tag-triggered workflows in the generated
-# output repositories.
+# This workflow does NOT pass --version, so Fern regenerates source without
+# cutting a registry release. For PyPI / npm publishes, use the separate
+# "Publish SDKs" workflow (workflow_dispatch with an explicit version).
 #
 # This repo is intentionally DECOUPLED from the AgentLine API server. It pulls
 # the raw OpenAPI from the live API (AGENTLINE_OPENAPI_URL, default

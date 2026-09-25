@@ -17,16 +17,21 @@
 #
 # Secrets (set them in the GitHub Actions secrets of THIS repo):
 #   FERN_TOKEN   – https://dashboard.buildwithfern.com  (create an org named `agentlinehq`)
-#   PYPI_TOKEN   – PyPI upload token
+#   PYPI_TOKEN   – PyPI upload token (token-based auth; syncs into output repos)
 #   NPM_TOKEN    – npm publish token
-#   GITHUB_TOKEN – automatic; Fern uses it to push to the two output repos
+#   GITHUB_TOKEN – automatic; Fern uses its GitHub App to push to the two output repos
 #
 # Output repos (must exist, or be auto-created by Fern's GitHub App on first run):
 #   AgentLineHQ/agentline-python
 #   AgentLineHQ/agentline-node
 #
+# Groups:
+#   sdks         – daily / PR regeneration (`mode: push`, no registry tag)
+#   sdks-release – versioned publish (`mode: release` + `fern generate --version`)
+#                 via `.github/workflows/publish.yml`
+#
 # Generator pins (see hub.docker.com/r/fernapi/fern-*-sdk/tags):
-#   fern-python-sdk      -> 5.21.0
+#   fern-python-sdk      -> 5.22.1
 #   fern-typescript-sdk  -> 3.83.0
 #
 # Bump with:  fern add fern-python-sdk  /  fern add fern-typescript-sdk
@@ -38,6 +43,7 @@ api:
 default-group: sdks
 
 groups:
+  # Source sync only — used by fern.yml (schedule / push). Does not cut tags.
   sdks:
     generators:
       # ── Python SDK  → github.com/AgentLineHQ/agentline-python ──
@@ -50,6 +56,19 @@ groups:
           location: pypi
           package-name: agentline-ai
           token: ${PYPI_TOKEN}
+          metadata:
+            keywords:
+              - agentline
+              - ai
+              - agents
+              - phone
+              - voice
+              - sms
+              - telephony
+            documentation-link: https://docs.agentline.cloud
+            homepage-link: https://agentline.cloud
+        metadata:
+          license: MIT
         config:
           client_class_name: AgentLine
           package_name: agentline_ai
@@ -61,6 +80,51 @@ groups:
         github:
           repository: AgentLineHQ/agentline-node
           mode: push
+        output:
+          location: npm
+          package-name: agentline
+          token: ${NPM_TOKEN}
+        config:
+          bundle: false
+          naming:
+            client: AgentLineClient
+
+  # Versioned release — used by publish.yml with --version X.Y.Z.
+  # Fern commits, tags (vX.Y.Z), and the output-repo CI publishes to PyPI / npm.
+  sdks-release:
+    generators:
+      - name: fernapi/fern-python-sdk
+        version: 5.22.1
+        github:
+          repository: AgentLineHQ/agentline-python
+          mode: release
+        output:
+          location: pypi
+          package-name: agentline-ai
+          token: ${PYPI_TOKEN}
+          metadata:
+            keywords:
+              - agentline
+              - ai
+              - agents
+              - phone
+              - voice
+              - sms
+              - telephony
+            documentation-link: https://docs.agentline.cloud
+            homepage-link: https://agentline.cloud
+        metadata:
+          license: MIT
+        config:
+          client_class_name: AgentLine
+          package_name: agentline_ai
+          timeout_in_seconds: 60
+
+      - name: fernapi/fern-typescript-sdk
+        version: 3.83.0
+        github:
+          repository: AgentLineHQ/agentline-node
+          mode: release
         output:
           location: npm
           package-name: agentline
