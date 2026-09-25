@@ -1488,6 +1488,65 @@
         "x-fern-sdk-method-name": "buy"
       }
     },
+    "/v1/numbers/attach": {
+      "post": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Attach Existing Number",
+        "description": "Manually attach a number that was bought directly from SignalWire dashboard.\nEach agent can only have ONE active number.\n\nQuery params:\n  - phone_number: E.164 format (e.g. \"+12125551234\")\n  - agent_id: agent to attach to",
+        "operationId": "attach_existing_number",
+        "security": [
+          {
+            "API Key or OAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "phone_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Phone Number"
+            }
+          },
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-fern-sdk-group-name": [
+          "numbers"
+        ],
+        "x-fern-sdk-method-name": "attach"
+      }
+    },
     "/v1/numbers/{number_id}": {
       "get": {
         "tags": [
@@ -3117,9 +3176,9 @@
     "securitySchemes": {
       "API Key or OAuth": {
         "type": "http",
-        "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer sk_live_...",
+        "description": "AgentLine API key. Get one via the email OTP flow (POST /v1/auth/otp then POST /v1/auth/verify). Pass as: Authorization: Bearer al_live_... (legacy sk_live_ keys are still accepted).",
         "scheme": "bearer",
-        "bearerFormat": "API key (sk_live_...)",
+        "bearerFormat": "API key (al_live_...)",
         "x-fern-bearer": {
           "name": "apiKey",
           "env": "AGENTLINE_API_KEY"

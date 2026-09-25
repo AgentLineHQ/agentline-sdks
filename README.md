@@ -48,7 +48,7 @@ top-ups) are excluded so they never reach the SDK.
 ```python
 from agentline_ai import AgentLine
 
-client = AgentLine(api_key="sk_live_...")
+client = AgentLine(api_key="al_live_...")
 
 agent = client.agents.create(name="Support Bot", system_prompt="...")
 number = client.numbers.buy(agent_id=agent.id, country="US", area_code="415")
@@ -60,7 +60,7 @@ print(client.calls.get_transcript(call.id))
 ```typescript
 import { AgentLineClient } from "agentline";
 
-const client = new AgentLineClient({ apiKey: "sk_live_..." });
+const client = new AgentLineClient({ apiKey: "al_live_..." });
 
 const agent = await client.agents.create({ name: "Support Bot", systemPrompt: "..." });
 const number = await client.numbers.buy({ agentId: agent.id, country: "US", areaCode: "415" });
@@ -76,9 +76,18 @@ The full operation map is in [`scripts/export_openapi.py`](scripts/export_openap
 
 [`.github/workflows/fern.yml`](.github/workflows/fern.yml):
 - Pulls the raw spec from the live API, curates it, commits any change.
-- Runs `fern check`, then `fern generate` — pushing to the two SDK repos and
-  publishing to PyPI / npm.
+- Runs `fern check`, then `fern generate` — pushing regenerated source to the
+  two SDK repos (no registry release).
 - Also runs daily on a schedule so the SDKs track the deployed API.
+
+[`.github/workflows/publish.yml`](.github/workflows/publish.yml)
+(`workflow_dispatch`):
+- Same refresh + `fern generate --group sdks-release --version X.Y.Z` so Fern
+  cuts Git tags on `agentline-python` / `agentline-node` and their CI publishes
+  to PyPI / npm.
+- Example: Actions → **Publish SDKs** → version `0.0.21`.
+- Daily `fern.yml` keeps using the `sdks` group (`mode: push`) so routine
+  regenerations do not accidentally tag releases.
 
 ## Local development
 

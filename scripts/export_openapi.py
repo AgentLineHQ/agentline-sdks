@@ -55,6 +55,7 @@ SDK_SURFACE: dict[str, tuple[str, str]] = {
     "buy_phone_number": ("numbers", "buy"),
     "list_phone_numbers": ("numbers", "list"),
     "get_phone_number": ("numbers", "get"),
+    "attach_existing_number": ("numbers", "attach"),
     "reassign_number": ("numbers", "reassign"),
     # Calls
     "make_outbound_call": ("calls", "create"),
@@ -137,11 +138,14 @@ def build_spec(raw: dict, server_url: str) -> dict:
         schemes[bearer_name] = {"type": "http", "scheme": "bearer"}
 
     bearer = schemes[bearer_name]
-    bearer["bearerFormat"] = "API key (sk_live_...)"
+    # Current mint prefix is al_live_; legacy sk_live_ keys are still accepted
+    # by the API (see AgentLine auth_middleware).
+    bearer["bearerFormat"] = "API key (al_live_...)"
     bearer["description"] = (
         "AgentLine API key. Get one via the email OTP flow "
         "(POST /v1/auth/otp then POST /v1/auth/verify). "
-        "Pass as: Authorization: Bearer sk_live_..."
+        "Pass as: Authorization: Bearer al_live_... "
+        "(legacy sk_live_ keys are still accepted)."
     )
     # Fern: name the constructor credential `apiKey` (default is `token`)
     # and let it fall back to the AGENTLINE_API_KEY env var.

@@ -1,0 +1,82 @@
+name: Publish SDKs
+
+# Cuts a versioned Fern release that tags AgentLineHQ/agentline-python and
+# AgentLineHQ/agentline-node, which triggers their tag-based PyPI / npm publish
+# jobs. Uses the `sdks-release` Fern group (`mode: release`). Requires
+# FERN_TOKEN + PYPI_TOKEN (+ NPM_TOKEN for the Node SDK).
+#
+# Daily source sync stays on the `sdks` group (`mode: push`) so routine
+# regenerations do not cut registry releases.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "SDK version to publish (e.g. 0.0.21) — do not include a leading v"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fern-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Generate & release SDKs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate version
+        run: |
+          V="${{ github.event.inputs.version }}"
+          if [[ ! "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.]+)?$ ]]; then
+            echo "Invalid version '$V'. Use semver without a leading v (e.g. 0.0.21)."
+            exit 1
+          fi
+          echo "Publishing SDKs as $V"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Refresh curated OpenAPI spec
+        run: python scripts/export_openapi.py
+        env:
+          AGENTLINE_OPENAPI_URL: ${{ secrets.AGENTLINE_OPENAPI_URL || 'https://api.agentline.cloud/openapi.json' }}
+
+      - name: Commit refreshed spec (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fern/openapi/openapi.json
+          if git diff --cached --quiet; then
+            echo "No spec changes."
+          else
+            git commit -m "chore: refresh curated OpenAPI spec before ${{ github.event.inputs.version }} release [skip ci]"
+            git push
+          fi
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Fern CLI
+        run: npm install -g fern-api
+
+      - name: Fern check
+        run: fern check
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+
+      - name: Generate and release SDKs
+        run: fern generate --group sdks-release --version "${{ github.event.inputs.version }}" --log-level debug
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
