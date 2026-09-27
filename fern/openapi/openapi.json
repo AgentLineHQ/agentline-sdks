@@ -832,7 +832,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` event. Do your work, then\nPOST facts for the hosted voice to phrase in its own words. Send ``disposition: progress``\nas the work advances; the turn stays open. ``done``, ``failed``, or\n``facts`` settles it. The hosted voice keeps the facts for the rest of the call.\nIt does not read your text aloud. You receive this request only for something\nthe hosted voice does not know. Poll ``GET /v1/calls/{call_id}`` for updates.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"John emailed yesterday about an invoice.\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` / ``task.open``. Do your work,\nthen POST facts for the hosted voice to phrase in its own words. The update\nreaches the live call immediately (relay bus), with no polling.\n\nDispositions:\n  - ``partial``: one real fact known so far. Spoken right away; the task stays open.\n  - ``progress``: a note that is not a fact yet. Not spoken; the task stays open.\n  - ``done`` / ``failed`` / ``noop``: settles the task.\n  - ``facts`` without ``turn_id``: call facts pushed any time (call-start\n    briefing, anticipations). The hosted voice answers from them without asking.\n    ``facts`` with an open task's ``turn_id`` settles that task (relay v1).\n\nThe hosted voice keeps the facts for the rest of the call. It does not read\nyour text aloud. Poll ``GET /v1/calls/{call_id}`` for updates.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"John emailed yesterday about an invoice.\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -1748,7 +1748,7 @@
           "Webhooks"
         ],
         "summary": "Set Webhook",
-        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; POSTing again replaces it.\n\n- `agent_id`: the agent whose events this webhook receives (required).\n- `secret`:   HMAC signing secret. Omit to auto-generate.\n\nThe response returns the full `secret` **once** — store it to verify the\nsignature header on deliveries.",
+        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; POSTing again replaces it.\n\n- `agent_id`: the agent whose events this webhook receives (required).\n- `secret`:   HMAC signing secret. Omit to auto-generate.\n- `protocol`: live relay protocol. `agentline-relay/2` sends typed POSTs\n  (`call.session.start`, `call.task.open`, `call.task.amend`,\n  `call.task.cancel`, `call.session.end`); answer via\n  `POST /v1/calls/{call_id}/context` and return 202 fast. Hosted bots such\n  as grokbot use this.\n- `capabilities`: what the runtime supports (`supports_amend`,\n  `supports_cancel`, `briefing`, `streams_progress`). Without\n  `supports_amend`, follow-ups are merged into one task after the current\n  one settles.\n\nThe response returns the full `secret` **once** — store it to verify the\nsignature header on deliveries.",
         "operationId": "set_webhook",
         "security": [
           {
@@ -3078,6 +3078,37 @@
         "title": "VoiceSettingUpdate",
         "description": "Set account-level default voice."
       },
+      "WebhookCapabilities": {
+        "properties": {
+          "supports_amend": {
+            "type": "boolean",
+            "title": "Supports Amend",
+            "description": "Accepts call.task.amend POSTs: caller follow-ups on the open task, same turn_id, higher revision. When false, AgentLine holds follow-ups and sends them as one merged task after the current one settles.",
+            "default": false
+          },
+          "supports_cancel": {
+            "type": "boolean",
+            "title": "Supports Cancel",
+            "description": "Accepts call.task.cancel POSTs when the caller withdraws a task.",
+            "default": false
+          },
+          "briefing": {
+            "type": "boolean",
+            "title": "Briefing",
+            "description": "Accepts call.session.start at call start and pushes facts the caller is likely to need (disposition=facts, no turn_id).",
+            "default": true
+          },
+          "streams_progress": {
+            "type": "boolean",
+            "title": "Streams Progress",
+            "description": "Pushes partial/progress updates while it works.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "WebhookCapabilities",
+        "description": "What a webhook runtime supports on live relay calls (protocol v2)."
+      },
       "WebhookConfig": {
         "properties": {
           "url": {
@@ -3116,6 +3147,33 @@
             ],
             "title": "Signature Header",
             "description": "Header name for the HMAC-SHA256 signature of the raw body. Defaults to 'X-Webhook-Signature' (natively verified by Hermes, OpenClaw, and other agent platforms). Set to 'X-Hub-Signature-256' for GitHub-style verification, or any custom header name your platform expects. Omit to keep the existing value when updating."
+          },
+          "protocol": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "agentline-relay/1",
+                  "agentline-relay/2"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protocol",
+            "description": "Live relay protocol. 'agentline-relay/1' (default): one call.utterance POST per task, answer in the response body or via push. 'agentline-relay/2': typed POSTs (call.session.start, call.task.open, call.task.amend, call.task.cancel, call.session.end); answer only via POST /v1/calls/{call_id}/context and return 202 quickly. Omit to keep the existing value when updating."
+          },
+          "capabilities": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WebhookCapabilities"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Relay v2 capabilities. Omit to keep the existing value when updating."
           }
         },
         "type": "object",
@@ -3147,6 +3205,18 @@
             "type": "string",
             "title": "Signature Header",
             "description": "Header name used for HMAC-SHA256 signature delivery."
+          },
+          "protocol": {
+            "type": "string",
+            "title": "Protocol",
+            "description": "Live relay protocol.",
+            "default": "agentline-relay/1"
+          },
+          "capabilities": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Capabilities",
+            "description": "Declared relay v2 capabilities."
           },
           "created_at": {
             "anyOf": [
