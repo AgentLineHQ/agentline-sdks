@@ -75,7 +75,7 @@
           "Voice"
         ],
         "summary": "Update Account Voice",
-        "description": "Set the account-level default voice for AI phone agents.\n\nThis becomes the default voice for ALL AI agents under this account,\ncontrolling how they sound on phone calls. Individual agents or\nspecific calls can still override this setting.\n\nVoice resolution priority:\n  1. Per-call voice_id (POST /v1/calls)\n  2. Agent voice_id (PATCH /v1/agents/{id})\n  3. Account default (this endpoint)  ← you are here\n  4. System default (Supportive Male)\n\nAccepts:\n  - A preset name: \"female-1\", \"female-2\", \"female-3\", \"male-1\", \"male-2\", \"male-3\"\n  - A Cartesia voice UUID: \"f786b574-daa5-4673-aa0c-cbe3e8534c02\"",
+        "description": "Set the account-level default voice for AI phone agents.\n\nThis becomes the default voice for ALL AI agents under this account,\ncontrolling how they sound on phone calls. Individual agents or\nspecific calls can still override this setting.\n\nVoice resolution priority:\n  1. Per-call voice_id (POST /v1/calls)\n  2. Agent voice_id (PATCH /v1/agents/{id})\n  3. Account default (this endpoint)  ← you are here\n  4. System default (Supportive Male)\n\nAccepts:\n  - A preset name: \"female-1\", \"female-2\", \"female-3\", \"male-1\", \"male-2\", \"male-3\"\n  - A voice UUID: \"f786b574-daa5-4673-aa0c-cbe3e8534c02\"",
         "operationId": "set_account_voice",
         "requestBody": {
           "content": {
@@ -151,7 +151,7 @@
           "Agents"
         ],
         "summary": "Create Agent",
-        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or Cartesia UUID\n  - transfer_number: Must be the owner phone. Live calls transfer only to owner_phone.\n  - voicemail_message: Message the agent leaves if the call goes to voicemail\n  - owner_phone: Owner's E.164 number. Task mode, and the only transfer destination.",
+        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or a voice UUID\n  - transfer_number: Must be the owner phone. Live calls transfer only to owner_phone.\n  - voicemail_message: Message the agent leaves if the call goes to voicemail\n  - owner_phone: Owner's E.164 number. Task mode, and the only transfer destination.",
         "operationId": "create_agent",
         "requestBody": {
           "content": {
@@ -1494,7 +1494,7 @@
           "Numbers"
         ],
         "summary": "Attach Existing Number",
-        "description": "Manually attach a number that was bought directly from SignalWire dashboard.\nEach agent can only have ONE active number.\n\nQuery params:\n  - phone_number: E.164 format (e.g. \"+12125551234\")\n  - agent_id: agent to attach to",
+        "description": "Manually attach a number that was bought outside this account.\nEach agent can only have ONE active number.\n\nQuery params:\n  - phone_number: E.164 format (e.g. \"+12125551234\")\n  - agent_id: agent to attach to",
         "operationId": "attach_existing_number",
         "security": [
           {
@@ -1553,7 +1553,7 @@
           "Numbers"
         ],
         "summary": "Get Number",
-        "description": "Get details of a specific phone number.\n\nReturns the phone number, its assigned AI agent, provider ID,\ncountry, and current status.",
+        "description": "Get details of a specific phone number.\n\nReturns the phone number, its assigned AI agent, country, and current status.",
         "operationId": "get_phone_number",
         "security": [
           {
@@ -1662,7 +1662,7 @@
           "Voice"
         ],
         "summary": "Get Available Voices",
-        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nYou can use a preset name (e.g. \"female-1\", \"male-1\") or pass any\nvalid Cartesia voice UUID directly as a voice_id.",
+        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nYou can use a preset name (e.g. \"female-1\", \"male-1\") or pass a\nvoice UUID directly as a voice_id.",
         "operationId": "list_available_voices",
         "responses": {
           "200": {
@@ -1939,7 +1939,7 @@
               }
             ],
             "title": "Voice Id",
-            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or Cartesia voice UUID; defaults to system voice if not set"
+            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or a voice UUID; defaults to system voice if not set"
           },
           "transfer_number": {
             "anyOf": [
@@ -2068,7 +2068,7 @@
               }
             ],
             "title": "Voice Id",
-            "description": "TTS voice preset or Cartesia UUID"
+            "description": "TTS voice preset or voice UUID"
           },
           "transfer_number": {
             "anyOf": [
@@ -2170,7 +2170,7 @@
               }
             ],
             "title": "Voice Id",
-            "description": "New TTS voice preset name or Cartesia voice UUID"
+            "description": "New TTS voice preset name or voice UUID"
           },
           "transfer_number": {
             "anyOf": [
@@ -2259,7 +2259,7 @@
               }
             ],
             "title": "Voice Id",
-            "description": "Override the TTS voice for this call: preset name (e.g. 'female-1') or Cartesia UUID"
+            "description": "Override the TTS voice for this call: preset name (e.g. 'female-1') or a voice UUID"
           },
           "from_number_id": {
             "anyOf": [
@@ -2593,7 +2593,7 @@
               }
             ],
             "title": "Voice Id",
-            "description": "TTS voice preset (e.g. 'female-1') or Cartesia UUID"
+            "description": "TTS voice preset (e.g. 'female-1') or a voice UUID"
           },
           "transfer_number": {
             "anyOf": [
@@ -2670,6 +2670,18 @@
             "type": "string",
             "title": "To Number",
             "description": "Destination phone number in E.164 format"
+          },
+          "lease_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lease Token",
+            "description": "lease_... token from numbers/buy. Calls bill prepaid credit; this endpoint does not take an x402 payment."
           }
         },
         "type": "object",
@@ -3068,7 +3080,7 @@
           "voice_id": {
             "type": "string",
             "title": "Voice Id",
-            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or Cartesia voice UUID"
+            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or a voice UUID"
           }
         },
         "type": "object",
