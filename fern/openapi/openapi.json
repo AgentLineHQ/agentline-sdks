@@ -4,11 +4,12 @@
     "title": "AgentLine",
     "description": "AgentLine gives every AI agent a real phone number, a human-like voice, and the ability to make and receive calls and SMS autonomously. This SDK covers the core developer surface: agents, numbers, calls, messages, events, webhooks, billing, and voice.",
     "version": "0.3.0",
-    "summary": "Phone numbers, voice, and SMS for AI agents.",
     "contact": {
       "name": "AgentLine",
       "url": "https://agentline.cloud"
     },
+    "x-guidance": "Recharge at GET or POST /v1/billing/topup/x402/pay with optional amount ($1-$1000). Retry the 402 challenge with exactly one Base x402 or Tempo MPP credential. Without signup, save the returned agent_token and use Authorization: Bearer <agent_token> for prepaid service operations and /mcp. Number leases cost $2 for 30 days; connected calls cost $0.10/min and require $0.50 available balance. No other endpoint accepts payments. Existing signup users may send their account Bearer token with recharge to credit that account. See /.well-known/agent-payments.json for configuration, numbers, calls, events and error guidance.",
+    "summary": "Phone numbers, voice, and SMS for AI agents.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/license/mit"
@@ -1898,6 +1899,44 @@
   },
   "components": {
     "schemas": {
+      "AccountWebhookConfig": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          },
+          "secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret"
+          },
+          "signature_header": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Header"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "AccountWebhookConfig"
+      },
       "AgentCreate": {
         "properties": {
           "name": {
@@ -2681,7 +2720,7 @@
               }
             ],
             "title": "Lease Token",
-            "description": "lease_... token from numbers/buy. Calls bill prepaid credit; this endpoint does not take an x402 payment."
+            "description": "agent_... token from recharge or existing lease_... token. Calls bill prepaid credit."
           }
         },
         "type": "object",
@@ -2690,20 +2729,6 @@
           "to_number"
         ],
         "title": "KeylessCallBody"
-      },
-      "KeylessCreditBody": {
-        "properties": {
-          "amount": {
-            "type": "number",
-            "title": "Amount",
-            "description": "USD credit to buy (1.00–1000.00). 1 USDC ≈ $1.00."
-          }
-        },
-        "type": "object",
-        "required": [
-          "amount"
-        ],
-        "title": "KeylessCreditBody"
       },
       "KeylessEventsBody": {
         "properties": {
@@ -2782,7 +2807,7 @@
               }
             ],
             "title": "Lease Token",
-            "description": "lease_... token (free auth alternative)"
+            "description": "agent_... or lease_... access token"
           }
         },
         "type": "object",
@@ -2992,27 +3017,11 @@
               }
             ],
             "title": "Amount",
-            "description": "Top-up amount in USD to advertise requirements for."
+            "description": "Recharge USD amount, $1–$1000; defaults to $1."
           }
         },
         "type": "object",
-        "title": "PayDiscoveryBody",
-        "description": "Optional POST body for the discovery probe (GET works identically)."
-      },
-      "TopupRequest": {
-        "properties": {
-          "amount": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Amount",
-            "description": "USD amount to top up (e.g. 5.00). 1 USDC ≈ $1.00."
-          }
-        },
-        "type": "object",
-        "required": [
-          "amount"
-        ],
-        "title": "TopupRequest"
+        "title": "PayDiscoveryBody"
       },
       "ValidationError": {
         "properties": {
@@ -3268,15 +3277,21 @@
       }
     }
   },
-  "security": [
-    {
-      "API Key or OAuth": []
-    }
-  ],
+  "x-service-info": {
+    "name": "AgentLine - AI Phone Service",
+    "description": "AgentLine gives AI agents real US phone numbers, inbound/outbound voice calls, AI receptionists, transcripts, inbound SMS and live phone events. Use REST or MCP without signup: recharge and save agent_token. This endpoint adds prepaid credit with Base USDC x402 or Tempo MPP. $1 minimum recharge; numbers $2/30 days; connected calls $0.10/min (first-minute minimum, then per-second); inbound SMS $0.02. Other endpoints use prepaid balance and do not accept payments.",
+    "url": "https://agentline.cloud",
+    "iconUrl": "https://api.agentline.cloud/favicon.png"
+  },
   "servers": [
     {
       "url": "https://api.agentline.cloud",
       "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "API Key or OAuth": []
     }
   ]
 }
