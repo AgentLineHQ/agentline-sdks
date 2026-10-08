@@ -1937,6 +1937,34 @@
         ],
         "title": "AccountWebhookConfig"
       },
+      "Action": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "title": "Operation",
+            "description": "One of: buy_phone_number, create_agent, delete_agent, delete_webhook, hangup_call, make_outbound_call, release_phone_number, reset_account_voice, set_account_voice, set_webhook, submit_feedback, test_webhook, update_agent"
+          },
+          "arguments": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Arguments",
+            "description": "Named endpoint arguments; request fields go under body. Never include credentials."
+          },
+          "request_id": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 16,
+            "title": "Request Id",
+            "description": "Stable caller-generated retry key; reuse for the same intended action."
+          }
+        },
+        "type": "object",
+        "required": [
+          "operation",
+          "request_id"
+        ],
+        "title": "Action"
+      },
       "AgentCreate": {
         "properties": {
           "name": {
@@ -2291,6 +2319,45 @@
         ],
         "title": "ApiKeyWebhookConfig"
       },
+      "CallContext": {
+        "properties": {
+          "context": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Context",
+            "description": "Facts for the voice agent to use in its own words. Not read aloud verbatim. Never include credentials.",
+            "default": ""
+          },
+          "turn_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turn Id",
+            "description": "Open question to answer, from list_call_turns. Omit to add call facts at any time."
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "facts",
+              "partial",
+              "progress",
+              "done",
+              "failed",
+              "noop"
+            ],
+            "title": "Disposition",
+            "description": "facts: call facts (or settles an open turn). partial: one fact so far, turn stays open. progress: not spoken. done/failed/noop: settle the turn.",
+            "default": "facts"
+          }
+        },
+        "type": "object",
+        "title": "CallContext"
+      },
       "CallRequest": {
         "properties": {
           "agent_id": {
@@ -2300,6 +2367,7 @@
           },
           "to_number": {
             "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
             "title": "To Number",
             "description": "Destination phone number in E.164 format (e.g. '+12125551234')"
           },
@@ -2358,6 +2426,19 @@
           "to_number"
         ],
         "title": "CallRequest"
+      },
+      "Deletion": {
+        "properties": {
+          "confirm": {
+            "type": "string",
+            "title": "Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirm"
+        ],
+        "title": "Deletion"
       },
       "FeedbackCategory": {
         "type": "string",
@@ -3241,8 +3322,7 @@
           "url",
           "agent_id"
         ],
-        "title": "WebhookConfig",
-        "description": "Body for POST /v1/webhooks (create or replace an agent's webhook)."
+        "title": "WebhookConfig"
       },
       "WebhookCreated": {
         "properties": {
