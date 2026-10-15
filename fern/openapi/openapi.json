@@ -22,7 +22,7 @@
           "Voice"
         ],
         "summary": "Get Account Voice",
-        "description": "Get the current account-level default voice for AI phone agents.\n\nReturns which voice is used for all AI agents under this account\nunless overridden at the agent level or per-call. Controls how\nyour AI agents sound during phone conversations.",
+        "description": "Get the current account-level default voice for AI phone agents.\n\nReturns which voice is used for all AI agents under this account\nunless overridden at the agent level or per-call.\n\nReturns account_id, default_voice_id (the stored preset name or UUID,\nnull when none is set) and resolved_voice_id (the voice UUID calls will\nactually use).",
         "operationId": "get_account_voice",
         "responses": {
           "200": {
@@ -49,7 +49,7 @@
           "Voice"
         ],
         "summary": "Reset Account Voice",
-        "description": "Reset account voice to the system default.\n\nRemoves the account-level voice override so all AI agents fall back\nto the system default voice during phone calls (unless they have\ntheir own voice_id configured).",
+        "description": "Reset account voice to the system default.\n\nRemoves the account-level voice override so all AI agents fall back\nto the system default voice during phone calls (unless they have\ntheir own voice_id configured), starting with their next call. The\nprevious value is not kept: read it with get_account_voice first if it\nmay be needed again.\n\nReturns account_id, default_voice_id null, resolved_voice_id (the\nsystem default) and a message.",
         "operationId": "reset_account_voice",
         "responses": {
           "200": {
@@ -76,7 +76,7 @@
           "Voice"
         ],
         "summary": "Update Account Voice",
-        "description": "Set the account-level default voice for AI phone agents.\n\nThis becomes the default voice for ALL AI agents under this account,\ncontrolling how they sound on phone calls. Individual agents or\nspecific calls can still override this setting.\n\nVoice resolution priority:\n  1. Per-call voice_id (POST /v1/calls)\n  2. Agent voice_id (PATCH /v1/agents/{id})\n  3. Account default (this endpoint)  ← you are here\n  4. System default (Supportive Male)\n\nAccepts:\n  - A preset name: \"female-1\", \"female-2\", \"female-3\", \"male-1\", \"male-2\", \"male-3\"\n  - A voice UUID: \"f786b574-daa5-4673-aa0c-cbe3e8534c02\"",
+        "description": "Set the account-level default voice for AI phone agents.\n\nThis becomes the default voice for ALL AI agents under this account,\ncontrolling how they sound on phone calls. Individual agents or\nspecific calls can still override this setting.\n\nVoice resolution priority:\n  1. Per-call voice_id (make_outbound_call)\n  2. Agent voice_id (update_agent)\n  3. Account default (this tool)\n  4. System default (Supportive Male)\n\nReturns account_id, default_voice_id (as sent) and resolved_voice_id\n(the UUID it resolves to). An unknown preset or malformed UUID returns\nHTTP 400.",
         "operationId": "set_account_voice",
         "requestBody": {
           "content": {
@@ -152,7 +152,7 @@
           "Agents"
         ],
         "summary": "Create Agent",
-        "description": "Create a new AI voice agent for telephony.\n\nSets up a new AI phone agent with a custom system prompt, voice,\nand greeting. Once created, buy a phone number and attach it to\nthis agent so it can make and receive calls autonomously.\n\nFields:\n  - name: Display name for the agent\n  - system_prompt: Instructions that define the agent's personality and behavior on calls\n  - initial_greeting: What the AI agent says when the call connects\n  - voice_id: TTS voice preset (e.g. \"female-1\") or a voice UUID\n  - transfer_number: Must be the owner phone. Live calls transfer only to owner_phone.\n  - voicemail_message: Message the agent leaves if the call goes to voicemail\n  - owner_phone: Owner's E.164 number. Task mode, and the only transfer destination.",
+        "description": "Create a new AI voice agent for telephony.\n\nAdds an agent to the account with its own system prompt, voice and\ngreeting. Creating an agent is free; it cannot call until it has a\nnumber, so call buy_phone_number next with the returned id as agent_id.\n\nReturns the new agent, including its id (agt_...). A voice_id that is\nnot a preset from list_available_voices or a voice UUID is rejected, as\nis a transfer_number that differs from owner_phone (HTTP 400).",
         "operationId": "create_agent",
         "requestBody": {
           "content": {
@@ -217,8 +217,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Agent ID (agt_...) returned by create_agent or list_agents.",
               "title": "Agent Id"
-            }
+            },
+            "description": "Agent ID (agt_...) returned by create_agent or list_agents."
           }
         ],
         "responses": {
@@ -251,7 +253,7 @@
           "Agents"
         ],
         "summary": "Update Agent",
-        "description": "Update an AI voice agent's configuration.\n\nModify any combination of the agent's settings: system prompt,\nvoice, greeting, transfer number, or voicemail message.\nChanges take effect on the next call the agent handles.\nOnly include the fields you want to change — unset fields are preserved.",
+        "description": "Update an AI voice agent's configuration.\n\nOverwrites the fields you send; omitted fields keep their values and the\nold values are not kept. Changes apply to the next inbound or outbound\ncall the agent handles; calls already in progress are unaffected.\n\nReturns the full updated agent. Sending no fields, an unknown voice_id or\na transfer_number other than owner_phone returns HTTP 400.",
         "operationId": "update_agent",
         "security": [
           {
@@ -265,8 +267,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Agent ID (agt_...) returned by create_agent or list_agents.",
               "title": "Agent Id"
-            }
+            },
+            "description": "Agent ID (agt_...) returned by create_agent or list_agents."
           }
         ],
         "requestBody": {
@@ -309,7 +313,7 @@
           "Agents"
         ],
         "summary": "Delete Agent",
-        "description": "Delete an AI voice agent.\n\nPermanently removes the agent, its calls, messages, and conversations,\nand detaches any phone numbers assigned to it. Detached numbers remain\nactive on your account and can be reassigned to another agent.",
+        "description": "Delete an AI voice agent.\n\nPermanently removes the agent with its calls and transcripts, messages,\nconversations, contacts and webhook. Cannot be undone. Phone numbers\nassigned to it are detached, not released: they stay active\non your account and can be reassigned to another agent.\n\nReturns {\"deleted\": true, \"agent_id\": ...}.",
         "operationId": "delete_agent",
         "security": [
           {
@@ -323,8 +327,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Agent ID (agt_...) returned by create_agent or list_agents.",
               "title": "Agent Id"
-            }
+            },
+            "description": "Agent ID (agt_...) returned by create_agent or list_agents."
           }
         ],
         "responses": {
@@ -402,11 +408,11 @@
             "required": false,
             "schema": {
               "type": "string",
-              "description": "Time period: 'current_month', 'last_month', 'all_time', or 'YYYY-MM'",
+              "description": "Which spending to total: 'current_month', 'last_month', 'all_time', or one calendar month as 'YYYY-MM' (e.g. '2026-09'). Unrecognized values fall back to the current month.",
               "default": "current_month",
               "title": "Period"
             },
-            "description": "Time period: 'current_month', 'last_month', 'all_time', or 'YYYY-MM'"
+            "description": "Which spending to total: 'current_month', 'last_month', 'all_time', or one calendar month as 'YYYY-MM' (e.g. '2026-09'). Unrecognized values fall back to the current month."
           }
         ],
         "responses": {
@@ -632,7 +638,7 @@
           "Calls"
         ],
         "summary": "Create Call",
-        "description": "Make an outbound phone call from your AI agent.\n\nInitiates a real phone call from the AI agent's phone number to the\nspecified destination. The agent uses its configured system prompt,\nvoice, and greeting to conduct the conversation autonomously.\n\nThe AI agent handles the entire call — speech-to-text, LLM reasoning,\nand text-to-speech — in real time. The call transcript is saved\nautomatically and can be retrieved via GET /v1/calls/{call_id}/transcript.\n\nRequest body:\n  - agent_id: the AI agent making the call\n  - to_number: destination phone number in E.164 format (e.g. \"+12125551234\")\n  - from_number_id: (optional) specific number to call from\n  - system_prompt: (optional) override the agent's default prompt for this call\n  - initial_greeting: (optional) override the agent's greeting for this call\n  - voice_id: (optional) override the voice for this call",
+        "description": "Make an outbound phone call from your AI agent.\n\nDials a real person or business from the agent's number. The agent holds\nthe whole conversation on its own with its system prompt, voice and\ngreeting (or this call's overrides). The call reaches a third party and\nis billed to the account at $0.10 per minute, first minute charged in\nfull, so confirm with the user first. Not idempotent: every successful\ncall dials again.\n\nPrerequisites: an agent with an active number from buy_phone_number\n(HTTP 400 otherwise) and at least $0.50 of balance (HTTP 402 otherwise).\n\nReturns right after dialing with the call id (call_...), agent_id,\nfrom_number, to_number, direction, status and started_at; the call runs\non its own. Check get_call_details for progress and call\nget_call_transcript once status is completed.",
         "operationId": "make_outbound_call",
         "security": [
           {
@@ -700,10 +706,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter calls by AI agent ID",
+              "description": "Only calls handled by this agent (agt_... from list_agents). Omit for every agent on the account.",
               "title": "Agent Id"
             },
-            "description": "Filter calls by AI agent ID"
+            "description": "Only calls handled by this agent (agt_... from list_agents). Omit for every agent on the account."
           },
           {
             "name": "status",
@@ -718,10 +724,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by call status: 'initiated', 'in-progress', 'completed', or 'failed'",
+              "description": "Only calls in this exact status, e.g. 'completed' or 'failed'. Other statuses: 'initiated', 'in-progress', 'busy', 'no-answer', 'canceled'.",
               "title": "Status"
             },
-            "description": "Filter by call status: 'initiated', 'in-progress', 'completed', or 'failed'"
+            "description": "Only calls in this exact status, e.g. 'completed' or 'failed'. Other statuses: 'initiated', 'in-progress', 'busy', 'no-answer', 'canceled'."
           },
           {
             "name": "limit",
@@ -731,11 +737,11 @@
               "type": "integer",
               "maximum": 200,
               "minimum": 1,
-              "description": "Maximum number of calls to return (1-200)",
+              "description": "Page size: how many calls to return, newest first.",
               "default": 50,
               "title": "Limit"
             },
-            "description": "Maximum number of calls to return (1-200)"
+            "description": "Page size: how many calls to return, newest first."
           },
           {
             "name": "offset",
@@ -744,11 +750,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "description": "Number of calls to skip for pagination",
+              "description": "How many calls to skip, to page past earlier results.",
               "default": 0,
               "title": "Offset"
             },
-            "description": "Number of calls to skip for pagination"
+            "description": "How many calls to skip, to page past earlier results."
           }
         ],
         "responses": {
@@ -797,8 +803,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event.",
               "title": "Call Id"
-            }
+            },
+            "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event."
           }
         ],
         "responses": {
@@ -833,7 +841,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nThis is the required way for backend agents (Hermes, OpenClaw, etc.) to\nanswer a live caller after a ``call.utterance`` / ``task.open``. Do your work,\nthen POST facts for the hosted voice to phrase in its own words. The update\nreaches the live call immediately (relay bus), with no polling.\n\nDispositions:\n  - ``partial``: one real fact known so far. Spoken right away; the task stays open.\n  - ``progress``: a note that is not a fact yet. Not spoken; the task stays open.\n  - ``done`` / ``failed`` / ``noop``: settles the task.\n  - ``facts`` without ``turn_id``: call facts pushed any time (call-start\n    briefing, anticipations). The hosted voice answers from them without asking.\n    ``facts`` with an open task's ``turn_id`` settles that task (relay v1).\n\nThe hosted voice keeps the facts for the rest of the call. It does not read\nyour text aloud. Poll ``GET /v1/calls/{call_id}`` for updates.\n\nAUTHENTICATION (one of):\n  1. **Push token** (preferred — no API key): the ``push_token`` from the\n     ``call.utterance`` payload, via ``X-Push-Token`` header, ``?token=``\n     query param, or ``push_token`` body field.\n  2. **Bearer API key**: ``Authorization: Bearer al_live_...`` for the\n     account that owns the call.\n\nBody — any of these keys works (``context`` is canonical):\n    {\"context\": \"John emailed yesterday about an invoice.\"}\n\nOther accepted keys: ``summary``, ``answer``, ``response``, ``reply``,\n``text``, ``result``.\n\nEvery response must include the exact ``turn_id`` from ``call.utterance``.\nLate context is rejected instead of being applied to another question.\n\nReturns:\n    delivered=true, status=\"live\"      — voice agent will speak it now\n    delivered=true, status=\"duplicate\" — identical retry already accepted\n    HTTP 409                            — turn is stale/cancelled\n    HTTP 410                            — **call has ended.** STOP working\n      on this request and abandon any in-flight lookup. No further context\n      will be spoken.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nA call.utterance or call.task.open event means a live caller is waiting.\nDo the work, then push the facts; they reach the call immediately. The\nhosted voice phrases them in its own words (it never reads your text\naloud) and keeps them for the rest of the call.\n\nBody fields (send as arguments next to call_id):\n  - context: the facts, e.g. \"John emailed yesterday about an invoice.\"\n    Aliases: summary, answer, response, reply, text, result, message.\n  - disposition: partial (one real fact so far; spoken now, task stays\n    open), progress (a note, not spoken, task stays open), done (default),\n    failed or noop (settle the task; noop needs no context), or facts\n    (call facts at any time without turn_id, e.g. a call-start briefing).\n  - turn_id, push_token: as the parameters below.\n\nAuth: pass the event's push_token as token. An AgentLine API key as\nAuthorization: Bearer also works; OAuth tokens do not.\n\nReturns {\"delivered\": true, \"status\", \"call_id\", \"turn_id\"}; status\n\"duplicate\" means an identical retry was already accepted. HTTP 409: the\nturn is stale or cancelled, so do not reuse this context. HTTP 410: the\ncall ended; stop working on this request.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -842,8 +850,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "ID (call_...) of the live call, from the call.utterance or call.task.open event.",
               "title": "Call Id"
-            }
+            },
+            "description": "ID (call_...) of the live call, from the call.utterance or call.task.open event."
           },
           {
             "name": "token",
@@ -858,10 +868,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Push token (alt to X-Push-Token header / body).",
+              "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header or a push_token body field.",
               "title": "Token"
             },
-            "description": "Push token (alt to X-Push-Token header / body)."
+            "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header or a push_token body field."
           },
           {
             "name": "turn_id",
@@ -876,10 +886,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Turn ID from call.utterance.",
+              "description": "The exact turn_id from the event, identifying the question being answered. Can also be sent in the body. Required except for disposition=facts.",
               "title": "Turn Id"
             },
-            "description": "Turn ID from call.utterance."
+            "description": "The exact turn_id from the event, identifying the question being answered. Can also be sent in the body. Required except for disposition=facts."
           },
           {
             "name": "X-Push-Token",
@@ -961,8 +971,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event.",
               "title": "Call Id"
-            }
+            },
+            "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event."
           }
         ],
         "responses": {
@@ -1011,8 +1023,10 @@
             "required": true,
             "schema": {
               "type": "string",
+              "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event.",
               "title": "Call Id"
-            }
+            },
+            "description": "Call ID (call_...) from make_outbound_call, list_calls or a call event."
           }
         ],
         "responses": {
@@ -1047,7 +1061,7 @@
           "Events"
         ],
         "summary": "List Events",
-        "description": "Poll for telephony events from your AI agents.\n\nReturns pending events such as call completions, transcripts, and\nfailures. Events are consumed on retrieval (one-time read) — once\npolled, they are automatically deleted from the mailbox.\n\nYour AI agent should call this endpoint periodically to receive\nnotifications about completed calls and their transcripts.\n\nFilters:\n  - agent_id: only events for a specific AI agent\n  - event_type: e.g. \"call.completed\", \"call.failed\"",
+        "description": "Poll for telephony events from your AI agents.\n\nReturns pending events such as call completions, transcripts, and\nfailures. Events are consumed on retrieval (one-time read) — once\npolled, they are automatically deleted from the mailbox, so process or\nstore them. Use peek_events to look without consuming.\n\nReturns {\"events\": [...], \"count\"}: each event has event_id, agent_id,\nevent_type, payload and created_at, oldest first. An empty list means\nnothing is pending. Agents with a webhook receive events there instead.",
         "operationId": "poll_events",
         "security": [
           {
@@ -1068,10 +1082,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter events by AI agent ID",
+              "description": "Only events for this agent (agt_... from list_agents). Omit for every agent on the account.",
               "title": "Agent Id"
             },
-            "description": "Filter events by AI agent ID"
+            "description": "Only events for this agent (agt_... from list_agents). Omit for every agent on the account."
           },
           {
             "name": "event_type",
@@ -1086,10 +1100,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by event type (e.g. 'call.completed', 'call.failed')",
+              "description": "Only events of this exact type, e.g. 'call.completed', 'call.failed', 'call.received' or 'sms.received'.",
               "title": "Event Type"
             },
-            "description": "Filter by event type (e.g. 'call.completed', 'call.failed')"
+            "description": "Only events of this exact type, e.g. 'call.completed', 'call.failed', 'call.received' or 'sms.received'."
           },
           {
             "name": "limit",
@@ -1099,11 +1113,11 @@
               "type": "integer",
               "maximum": 200,
               "minimum": 1,
-              "description": "Maximum number of events to return (1-200)",
+              "description": "Most events to claim in this call, oldest first. Events past the limit stay queued for the next poll.",
               "default": 50,
               "title": "Limit"
             },
-            "description": "Maximum number of events to return (1-200)"
+            "description": "Most events to claim in this call, oldest first. Events past the limit stay queued for the next poll."
           }
         ],
         "responses": {
@@ -1138,7 +1152,7 @@
           "Events"
         ],
         "summary": "Peek Events",
-        "description": "Peek at pending telephony events without consuming them.\n\nReturns a preview of queued events (call completions, transcripts)\nwithout removing them from the mailbox. Useful for checking if\nthere are events to process before committing to retrieve them.",
+        "description": "Peek at pending telephony events without consuming them.\n\nReturns a preview of queued events (call completions, transcripts)\nwithout removing them from the mailbox. Useful for checking if\nthere are events to process before committing to retrieve them.\n\nReturns {\"pending_count\", \"events\"}: pending_count counts every queued\nevent for the account (or agent_id); events lists event_id, agent_id,\nevent_type and created_at, without payloads. Call poll_events to get the\npayloads.",
         "operationId": "peek_events",
         "security": [
           {
@@ -1159,10 +1173,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter events by AI agent ID",
+              "description": "Only events for this agent (agt_... from list_agents). Omit for every agent on the account.",
               "title": "Agent Id"
             },
-            "description": "Filter events by AI agent ID"
+            "description": "Only events for this agent (agt_... from list_agents). Omit for every agent on the account."
           },
           {
             "name": "limit",
@@ -1172,11 +1186,11 @@
               "type": "integer",
               "maximum": 200,
               "minimum": 1,
-              "description": "Maximum number of events to preview (1-200)",
+              "description": "Most events to list, oldest first. Does not change pending_count.",
               "default": 50,
               "title": "Limit"
             },
-            "description": "Maximum number of events to preview (1-200)"
+            "description": "Most events to list, oldest first. Does not change pending_count."
           }
         ],
         "responses": {
@@ -1279,10 +1293,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter messages by AI agent ID",
+              "description": "Only messages for this agent (agt_... from list_agents). Omit for every agent on the account.",
               "title": "Agent Id"
             },
-            "description": "Filter messages by AI agent ID"
+            "description": "Only messages for this agent (agt_... from list_agents). Omit for every agent on the account."
           },
           {
             "name": "conversation_id",
@@ -1297,10 +1311,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter messages by conversation thread ID",
+              "description": "Only messages in this thread; take conversation_id from an earlier list_messages result.",
               "title": "Conversation Id"
             },
-            "description": "Filter messages by conversation thread ID"
+            "description": "Only messages in this thread; take conversation_id from an earlier list_messages result."
           },
           {
             "name": "limit",
@@ -1310,11 +1324,11 @@
               "type": "integer",
               "maximum": 200,
               "minimum": 1,
-              "description": "Maximum number of messages to return (1-200)",
+              "description": "Page size: how many messages to return, newest first.",
               "default": 50,
               "title": "Limit"
             },
-            "description": "Maximum number of messages to return (1-200)"
+            "description": "Page size: how many messages to return, newest first."
           },
           {
             "name": "offset",
@@ -1323,11 +1337,11 @@
             "schema": {
               "type": "integer",
               "minimum": 0,
-              "description": "Number of messages to skip for pagination",
+              "description": "How many messages to skip, to page past earlier results.",
               "default": 0,
               "title": "Offset"
             },
-            "description": "Number of messages to skip for pagination"
+            "description": "How many messages to skip, to page past earlier results."
           }
         ],
         "responses": {
@@ -1446,7 +1460,7 @@
           "Numbers"
         ],
         "summary": "Provision",
-        "description": "Buy a US phone number for your AI agent.\n\nSearches for and purchases a real US phone number from the telephony\nprovider, then attaches it to the specified AI agent. Once attached,\nthe agent can make outbound calls and receive inbound calls on this number.\n\nEach AI agent can only have ONE active phone number. Costs $2.00 per number.\n\nRequest body:\n  - agent_id: str (required) — the AI agent to assign this number to\n  - country: str (must be \"US\")\n  - number_type: \"local\" | \"tollfree\"\n  - area_code: preferred 3-digit US area code (e.g. \"212\" for NYC, \"415\" for SF)",
+        "description": "Buy a US or Canada phone number for your AI agent.\n\nBuys a real +1 number from the carrier, attaches it to the agent and\ncharges $2.00 to the account balance. Once attached, the agent can make\noutbound calls and answers inbound calls on this number. Not idempotent:\nevery successful call buys and charges for another number.\n\nPrerequisites: an agent from create_agent with no active number (each\nagent has at most one; a second purchase returns HTTP 409) and at least\n$2.00 of balance (HTTP 402 otherwise; see get_account_balance).\n\nReturns the number's id (num_..., used by release_phone_number and as\nfrom_number_id), phone_number, country, number_type, status, cost,\nbalance_remaining and a private number card link (card_url,\ncard_image_url, card_url_expires_at). If the account has an owner email,\nthe card link is also emailed there.",
         "operationId": "buy_phone_number",
         "requestBody": {
           "content": {
@@ -1663,7 +1677,7 @@
           "Voice"
         ],
         "summary": "Get Available Voices",
-        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nYou can use a preset name (e.g. \"female-1\", \"male-1\") or pass a\nvoice UUID directly as a voice_id.",
+        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nReturns {\"voices\": [...], \"default_voice_id\", \"usage_hint\"}: each voice\nhas preset_name (e.g. \"female-1\"), voice_id (UUID), name and description.\nPass either preset_name or voice_id as voice_id to create_agent,\nupdate_agent, make_outbound_call or set_account_voice.",
         "operationId": "list_available_voices",
         "responses": {
           "200": {
@@ -1692,7 +1706,7 @@
           "Webhooks"
         ],
         "summary": "Get Webhooks",
-        "description": "List the account's per-agent webhook configuration(s).\n\nSecrets are **masked**. Pass `agent_id` to inspect a single agent's webhook.\nThe full secret is only ever shown once, on the POST that creates/replaces it.",
+        "description": "List the account's per-agent webhook configuration(s).\n\nSecrets are **masked**. Pass `agent_id` to inspect a single agent's webhook.\nThe full secret is only ever shown once, by set_webhook.\n\nReturns {\"webhooks\": [...], \"count\"}: each has agent_id, url, masked\nsecret, signature_header, protocol, capabilities and created_at. An empty\nlist means no webhook is set, so events wait for poll_events. HTTP 404 if\nagent_id is not an agent on this account.",
         "operationId": "get_webhook",
         "security": [
           {
@@ -1749,7 +1763,7 @@
           "Webhooks"
         ],
         "summary": "Set Webhook",
-        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; POSTing again replaces it.\n\n- `agent_id`: the agent whose events this webhook receives (required).\n- `secret`:   HMAC signing secret. Omit to auto-generate.\n- `protocol`: live relay protocol. `agentline-relay/2` sends typed POSTs\n  (`call.session.start`, `call.task.open`, `call.task.amend`,\n  `call.task.cancel`, `call.session.end`); answer via\n  `POST /v1/calls/{call_id}/context` and return 202 fast. Hosted bots such\n  as grokbot use this.\n- `capabilities`: what the runtime supports (`supports_amend`,\n  `supports_cancel`, `briefing`, `streams_progress`). Without\n  `supports_amend`, follow-ups are merged into one task after the current\n  one settles.\n\nThe response returns the full `secret` **once** — store it to verify the\nsignature header on deliveries.",
+        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; setting it again replaces the URL. Omitted secret,\nsignature_header, protocol and capabilities keep their current values.\n\nReturns agent_id, url, the full secret (shown only here; get_webhook\nmasks it), signature_header, protocol, capabilities and created_at.\nStore the secret to verify the signature header on deliveries.",
         "operationId": "set_webhook",
         "security": [
           {
@@ -1864,10 +1878,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Agent whose webhook to test",
+              "description": "Agent (agt_... from list_agents) whose configured webhook should receive the test event.",
               "title": "Agent Id"
             },
-            "description": "Agent whose webhook to test"
+            "description": "Agent (agt_... from list_agents) whose configured webhook should receive the test event."
           }
         ],
         "responses": {
@@ -2018,7 +2032,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "Ignored unless it is the owner phone. Live transfers always dial owner_phone; a different number is rejected."
+            "description": "Number a live call is transferred to. Only the owner phone is allowed, so leave it out or send the same E.164 number as owner_phone; setting owner_phone fills it in."
           },
           "voicemail_message": {
             "anyOf": [
@@ -2249,7 +2263,7 @@
               }
             ],
             "title": "Transfer Number",
-            "description": "Must match owner_phone. A different number is rejected; setting owner_phone updates this to the same number."
+            "description": "Number a live call is transferred to. Only the owner phone is allowed, so send the same E.164 number as owner_phone (current or in this request); setting owner_phone updates it automatically."
           },
           "voicemail_message": {
             "anyOf": [
@@ -2427,6 +2441,187 @@
         ],
         "title": "CallRequest"
       },
+      "ContactCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Who this is, e.g. 'Dr. Patel' or 'Joe's Plumbing'"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number",
+            "description": "The contact's phone number with a leading + and country code, e.g. '+12125551234'. Spaces, dashes, dots and parentheses are removed before saving; a number without a country code is rejected."
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "Why the agent deals with this person, e.g. 'dentist', 'landlord', 'customer', 'Mom'. list_contacts can filter by it. Omit for no label."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "phone_number"
+        ],
+        "title": "ContactCreate"
+      },
+      "ContactList": {
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "Agent whose contacts these are"
+          },
+          "contacts": {
+            "items": {
+              "$ref": "#/components/schemas/ContactOut"
+            },
+            "type": "array",
+            "title": "Contacts",
+            "description": "Matching contacts, sorted by name"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Number of contacts matching the filters, ignoring limit and offset"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "description": "Page size used"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Offset used"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent_id",
+          "contacts",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ContactList"
+      },
+      "ContactOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique contact identifier (e.g. 'con_abc123')"
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "Agent whose contact list this entry belongs to"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Contact name"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "Purpose or relationship"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number",
+            "description": "Phone number in E.164 format"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the contact was saved"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "When the contact was last changed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "agent_id",
+          "name",
+          "phone_number",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ContactOut"
+      },
+      "ContactUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Replacement name for the contact, e.g. 'Dr. Patel'. Omit to keep the current name."
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number",
+            "description": "Replacement phone number with a leading + and country code, e.g. '+12125551234'; formatting characters are removed. Omit to keep the current number."
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "Replacement purpose or relationship, e.g. 'dentist'. Send null or an empty string to remove the label; omit to keep it."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ContactUpdate"
+      },
       "Deletion": {
         "properties": {
           "confirm": {
@@ -2454,7 +2649,7 @@
         "properties": {
           "category": {
             "$ref": "#/components/schemas/FeedbackCategory",
-            "description": "Type of feedback: 'bug' (something broken / not working), 'feature_request' (want a new capability), 'difficulty' (hard or confusing to use), or 'feedback' (general comment or praise)"
+            "description": "Kind of report: bug (something broken), feature_request (a missing capability), difficulty (hard or confusing to use) or feedback (general comment or praise)"
           },
           "message": {
             "type": "string",
@@ -2471,11 +2666,11 @@
               }
             ],
             "title": "Subject",
-            "description": "Short summary title for the feedback (optional)"
+            "description": "Short summary shown as the title, e.g. 'Outbound call drops after greeting'. When omitted the feedback is saved without a subject."
           },
           "severity": {
             "$ref": "#/components/schemas/FeedbackSeverity",
-            "description": "Impact level, mainly relevant for bugs: 'low', 'normal', 'high', or 'critical'",
+            "description": "How much the issue affects you; mainly relevant for bugs",
             "default": "normal"
           },
           "agent_id": {
@@ -2488,7 +2683,7 @@
               }
             ],
             "title": "Agent Id",
-            "description": "ID of the AI agent this feedback relates to, if applicable"
+            "description": "Agent the feedback is about (agt_... from list_agents), if any. Must be an agent on this account."
           },
           "contact_email": {
             "anyOf": [
@@ -3076,7 +3271,7 @@
           "number_type": {
             "type": "string",
             "title": "Number Type",
-            "description": "Type of phone number: 'local' or 'tollfree'",
+            "description": "'local' for a number in a geographic area code, or 'tollfree' for a toll-free 8xx number",
             "default": "local"
           },
           "area_code": {
@@ -3089,7 +3284,7 @@
               }
             ],
             "title": "Area Code",
-            "description": "Preferred 3-digit US area code (e.g. '212' for NYC, '415' for SF, '310' for LA)"
+            "description": "For local numbers, the area code the number should be in, written as 3 digits (US e.g. '212' NYC, '415' SF; Canada e.g. '416' Toronto, '604' Vancouver, '514' Montreal); other values make the purchase fail. For tollfree, a prefix such as '800' or '888' narrows the search and other values are ignored. Omit to take any available number."
           },
           "pattern": {
             "anyOf": [
@@ -3101,7 +3296,7 @@
               }
             ],
             "title": "Pattern",
-            "description": "Legacy digit pattern match (prefer area_code instead)"
+            "description": "Legacy search: digits the local number must contain, e.g. '555'. Used only for local numbers when area_code is omitted; prefer area_code."
           }
         },
         "type": "object",
@@ -3209,7 +3404,7 @@
           "voice_id": {
             "type": "string",
             "title": "Voice Id",
-            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or a voice UUID"
+            "description": "Default voice for the account: a preset_name such as 'female-1' or a voice_id UUID, both listed by list_available_voices."
           }
         },
         "type": "object",
@@ -3263,7 +3458,7 @@
           "agent_id": {
             "type": "string",
             "title": "Agent Id",
-            "description": "ID of the agent whose events this webhook receives. Each agent may have at most one webhook."
+            "description": "ID (agt_...) of the agent whose events this webhook receives, from create_agent or list_agents. Each agent may have at most one webhook."
           },
           "secret": {
             "anyOf": [
@@ -3275,7 +3470,7 @@
               }
             ],
             "title": "Secret",
-            "description": "Optional HMAC signing secret. Auto-generated if omitted. Used to verify the signature header on delivered payloads."
+            "description": "Optional HMAC signing secret used to verify the signature header on delivered payloads. Omit to keep the current secret, or to auto-generate one for a new webhook."
           },
           "signature_header": {
             "anyOf": [
