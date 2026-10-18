@@ -1460,7 +1460,7 @@
           "Numbers"
         ],
         "summary": "Provision",
-        "description": "Buy a US or Canadian phone number for your AI agent.\n\nBuys a real +1 number from the carrier, attaches it to the agent and\nuses an included subscription number, or charges $2.00 to the wallet. Once attached, the agent can make\noutbound calls and answers inbound calls on this number. Existing numbers retain their carrier.\nEach agent can have only one active number.\n\nPrerequisites: an agent from create_agent with no active number (each\nagent has at most one; a second purchase returns HTTP 409), plus a remaining\nsubscription number allowance or $2.00 in the wallet\n(HTTP 402 otherwise; see get_account_balance).\n\nReturns the number's id (num_..., used by release_phone_number and as\nfrom_number_id), phone_number, country, number_type, status, cost,\nbalance_remaining and a private number card link (card_url,\ncard_image_url, card_url_expires_at). If the account has an owner email,\nthe card link is also emailed there.",
+        "description": "Buy a US phone number for your AI agent.\n\nBuys a real +1 number from the carrier, attaches it to the agent and\nuses an included subscription number, or charges $2.00 to the wallet. Once attached, the agent can make\noutbound calls and answers inbound calls on this number. Not idempotent:\nevery successful call buys and charges for another number.\n\nPrerequisites: an agent from create_agent with no active number (each\nagent has at most one; a second purchase returns HTTP 409), plus a remaining\nsubscription number allowance or $2.00 in the wallet\n(HTTP 402 otherwise; see get_account_balance).\n\nReturns the number's id (num_..., used by release_phone_number and as\nfrom_number_id), phone_number, country, number_type, status, cost,\nbalance_remaining and a private number card link (card_url,\ncard_image_url, card_url_expires_at). If the account has an owner email,\nthe card link is also emailed there.",
         "operationId": "buy_phone_number",
         "requestBody": {
           "content": {
@@ -1509,7 +1509,7 @@
           "Numbers"
         ],
         "summary": "Attach Existing Number",
-        "description": "Manually attach a number that was bought outside this account.\nEach agent can only have ONE active number.\n\nQuery params:\n  - phone_number: E.164 format (e.g. \"+12125551234\")\n  - agent_id: agent to attach to\n  - country: \"US\" (default) or \"CA\" — both are +1, so say which",
+        "description": "Manually attach a number that was bought outside this account.\nEach agent can only have ONE active number.\n\nQuery params:\n  - phone_number: E.164 format (e.g. \"+12125551234\")\n  - agent_id: agent to attach to",
         "operationId": "attach_existing_number",
         "security": [
           {
@@ -1533,16 +1533,6 @@
             "schema": {
               "type": "string",
               "title": "Agent Id"
-            }
-          },
-          {
-            "name": "country",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "US",
-              "title": "Country"
             }
           }
         ],
@@ -3275,7 +3265,7 @@
           "country": {
             "type": "string",
             "title": "Country",
-            "description": "Country code for the phone number ('US' or 'CA')",
+            "description": "Country code for the phone number (currently only 'US' is supported)",
             "default": "US"
           },
           "number_type": {
