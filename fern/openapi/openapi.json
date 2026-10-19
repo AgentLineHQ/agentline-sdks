@@ -365,7 +365,7 @@
           "Billing"
         ],
         "summary": "Get Balance",
-        "description": "Get your AI telephony account balance and rate card.\n\nReturns the current balance, currency, billing rates for calls,\nphone numbers, and inbound SMS, plus what the balance can cover.\nUse this to check affordability before paid telephony operations.",
+        "description": "Get your AI telephony account balance and rate card.\n\nReturns the current balance, currency, billing rates for calls,\nphone numbers, and SMS, plus what the balance can cover.\nUse this to check affordability before paid telephony operations.",
         "operationId": "get_account_balance",
         "responses": {
           "200": {
@@ -2998,7 +2998,7 @@
           "country": {
             "type": "string",
             "title": "Country",
-            "description": "Country code (only 'US' supported)",
+            "description": "Country code: 'US' or 'CA'",
             "default": "US"
           },
           "number_type": {
@@ -3603,7 +3603,7 @@
   },
   "x-service-info": {
     "name": "AgentLine - AI Phone Service",
-    "description": "AgentLine gives AI agents real US and Canada phone numbers, inbound/outbound voice calls, AI receptionists, transcripts, inbound SMS and live phone events. Use REST or MCP without signup: recharge and save agent_token. This endpoint adds prepaid credit with Base USDC x402 or Tempo MPP. $1 minimum recharge; numbers $3/30 days; connected calls $0.12/min (first-minute minimum, then per-second); inbound SMS $0.02. Other endpoints use prepaid balance and do not accept payments.",
+    "description": "AgentLine gives AI agents real US and Canada phone numbers, inbound/outbound voice calls, AI receptionists, transcripts, two-way SMS and live phone events. Use REST or MCP without signup: recharge and save agent_token. This endpoint adds prepaid credit with Base USDC x402 or Tempo MPP. $1 minimum recharge; numbers $3/30 days; connected calls $0.12/min (first-minute minimum, then per-second); SMS $0.02 sent or received. Other endpoints use prepaid balance and do not accept payments.",
     "url": "https://agentline.cloud",
     "iconUrl": "https://api.agentline.cloud/favicon.png"
   },
