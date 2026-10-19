@@ -8,7 +8,7 @@
       "name": "AgentLine",
       "url": "https://agentline.cloud"
     },
-    "x-guidance": "Recharge at GET or POST /v1/billing/topup/x402/pay with optional amount ($1-$1000). Retry the 402 challenge with exactly one Base x402 or Tempo MPP credential. Without signup, save the returned agent_token and use Authorization: Bearer <agent_token> for prepaid service operations and /mcp. Number leases cost $2 for 30 days; connected calls cost $0.10/min and require $0.50 available balance. No other endpoint accepts payments. Existing signup users may send their account Bearer token with recharge to credit that account. See /.well-known/agent-payments.json for configuration, numbers, calls, events and error guidance.",
+    "x-guidance": "Recharge at GET or POST /v1/billing/topup/x402/pay with optional amount ($1-$1000). Retry the 402 challenge with exactly one Base x402 or Tempo MPP credential. Without signup, save the returned agent_token and use Authorization: Bearer <agent_token> for prepaid service operations and /mcp. Number leases cost $3 for 30 days; connected calls cost $0.12/min and require $0.50 available balance. No other endpoint accepts payments. Existing signup users may send their account Bearer token with recharge to credit that account. See /.well-known/agent-payments.json for configuration, numbers, calls, events and error guidance.",
     "summary": "Phone numbers, voice, and SMS for AI agents.",
     "license": {
       "name": "MIT",
@@ -638,7 +638,7 @@
           "Calls"
         ],
         "summary": "Create Call",
-        "description": "Make an outbound phone call from your AI agent.\n\nDials a real person or business from the agent's number. The agent holds\nthe whole conversation on its own with its system prompt, voice and\ngreeting (or this call's overrides). The call reaches a third party and\nis billed to the account at $0.10 per minute, first minute charged in\nfull, so confirm with the user first. Not idempotent: every successful\ncall dials again.\n\nPrerequisites: an agent with an active number from buy_phone_number\n(HTTP 400 otherwise), plus remaining subscription minutes or at least\n$0.50 of wallet balance (HTTP 402 otherwise). Included minutes are used\nfirst; only uncovered call time is charged to the wallet.\n\nReturns right after dialing with the call id (call_...), agent_id,\nfrom_number, to_number, direction, status and started_at; the call runs\non its own. Check get_call_details for progress and call\nget_call_transcript once status is completed.",
+        "description": "Make an outbound phone call from your AI agent.\n\nDials a real person or business from the agent's number. The agent holds\nthe whole conversation on its own with its system prompt, voice and\ngreeting (or this call's overrides). The call reaches a third party and\nis billed to the account at $0.12 per minute, first minute charged in\nfull, so confirm with the user first. Not idempotent: every successful\ncall dials again.\n\nPrerequisites: an agent with an active number from buy_phone_number\n(HTTP 400 otherwise), plus remaining subscription minutes or at least\n$0.50 of wallet balance (HTTP 402 otherwise). Included minutes are used\nfirst; only uncovered call time is charged to the wallet.\n\nReturns right after dialing with the call id (call_...), agent_id,\nfrom_number, to_number, direction, status and started_at; the call runs\non its own. Check get_call_details for progress and call\nget_call_transcript once status is completed.",
         "operationId": "make_outbound_call",
         "security": [
           {
@@ -1460,7 +1460,7 @@
           "Numbers"
         ],
         "summary": "Provision",
-        "description": "Buy a US phone number for your AI agent.\n\nBuys a real +1 number from the carrier, attaches it to the agent and\nuses an included subscription number, or charges $2.00 to the wallet. Once attached, the agent can make\noutbound calls and answers inbound calls on this number. Not idempotent:\nevery successful call buys and charges for another number.\n\nPrerequisites: an agent from create_agent with no active number (each\nagent has at most one; a second purchase returns HTTP 409), plus a remaining\nsubscription number allowance or $2.00 in the wallet\n(HTTP 402 otherwise; see get_account_balance).\n\nReturns the number's id (num_..., used by release_phone_number and as\nfrom_number_id), phone_number, country, number_type, status, cost,\nbalance_remaining and a private number card link (card_url,\ncard_image_url, card_url_expires_at). If the account has an owner email,\nthe card link is also emailed there.",
+        "description": "Buy a US or Canada phone number for your AI agent.\n\nBuys a real +1 number from the carrier, attaches it to the agent and\nuses an included subscription number, or charges $3.00 to the wallet. Once attached, the agent can make\noutbound calls and answers inbound calls on this number. Not idempotent:\nevery successful call buys and charges for another number.\n\nPrerequisites: an agent from create_agent with no active number (each\nagent has at most one; a second purchase returns HTTP 409), plus a remaining\nsubscription number allowance or $3.00 in the wallet\n(HTTP 402 otherwise; see get_account_balance).\n\nReturns the number's id (num_..., used by release_phone_number and as\nfrom_number_id), phone_number, country, number_type, status, cost,\nbalance_remaining and a private number card link (card_url,\ncard_image_url, card_url_expires_at). If the account has an owner email,\nthe card link is also emailed there.",
         "operationId": "buy_phone_number",
         "requestBody": {
           "content": {
@@ -3593,7 +3593,7 @@
   },
   "x-service-info": {
     "name": "AgentLine - AI Phone Service",
-    "description": "AgentLine gives AI agents real US phone numbers, inbound/outbound voice calls, AI receptionists, transcripts, inbound SMS and live phone events. Use REST or MCP without signup: recharge and save agent_token. This endpoint adds prepaid credit with Base USDC x402 or Tempo MPP. $1 minimum recharge; numbers $2/30 days; connected calls $0.10/min (first-minute minimum, then per-second); inbound SMS $0.02. Other endpoints use prepaid balance and do not accept payments.",
+    "description": "AgentLine gives AI agents real US and Canada phone numbers, inbound/outbound voice calls, AI receptionists, transcripts, inbound SMS and live phone events. Use REST or MCP without signup: recharge and save agent_token. This endpoint adds prepaid credit with Base USDC x402 or Tempo MPP. $1 minimum recharge; numbers $3/30 days; connected calls $0.12/min (first-minute minimum, then per-second); inbound SMS $0.02. Other endpoints use prepaid balance and do not accept payments.",
     "url": "https://agentline.cloud",
     "iconUrl": "https://api.agentline.cloud/favicon.png"
   },
