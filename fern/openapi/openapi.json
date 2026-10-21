@@ -3398,8 +3398,10 @@
           },
           "otp": {
             "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
             "title": "Otp",
-            "description": "One-time code received via email"
+            "description": "One-time code received via email, exactly as it appears in the message"
           }
         },
         "type": "object",
