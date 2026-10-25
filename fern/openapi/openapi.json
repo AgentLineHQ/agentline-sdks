@@ -1225,7 +1225,7 @@
           "Messages"
         ],
         "summary": "Send Message",
-        "description": "Send an outbound SMS message from an AI agent's phone number.",
+        "description": "Send an outbound SMS message from an AI agent's phone number.\n\nEach account can send 250 texts per UTC day across all its agents.",
         "operationId": "send_sms",
         "security": [
           {
