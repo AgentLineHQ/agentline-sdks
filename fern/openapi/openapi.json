@@ -841,7 +841,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nA call.utterance or call.task.open event means a live caller is waiting.\nDo the work, then push the facts; they reach the call immediately. The\nhosted voice phrases them in its own words (it never reads your text\naloud) and keeps them for the rest of the call.\n\nBody fields (send as arguments next to call_id):\n  - context: the facts, e.g. \"John emailed yesterday about an invoice.\"\n    Aliases: summary, answer, response, reply, text, result, message.\n  - disposition: partial (one real fact so far; spoken now, task stays\n    open), progress (a note, not spoken, task stays open), done (default),\n    failed or noop (settle the task; noop needs no context), or facts\n    (call facts at any time without turn_id, e.g. a call-start briefing).\n  - turn_id, push_token: as the parameters below.\n\nAuth: pass the event's push_token as token. An AgentLine API key as\nAuthorization: Bearer also works; OAuth tokens do not.\n\nReturns {\"delivered\": true, \"status\", \"call_id\", \"turn_id\"}; status\n\"duplicate\" means an identical retry was already accepted. HTTP 409: the\nturn is stale or cancelled, so do not reuse this context. HTTP 410: the\ncall ended; stop working on this request.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nA call.utterance or call.task.open event means a live caller is waiting.\nDo the work, then push the facts; they reach the call immediately. The\nhosted voice phrases them in its own words (it never reads your text\naloud) and keeps them for the rest of the call.\n\nArguments: call_id, turn_id and token from the event; context (the\nfacts) and disposition (partial, progress, done, failed, noop or facts).\ncontext is required unless disposition is noop. turn_id is required\nunless disposition is facts.\n\nAuth: pass the event's push_token as token. An AgentLine API key as\nAuthorization: Bearer also works; OAuth tokens do not.\n\nReturns {\"delivered\": true, \"status\", \"call_id\", \"turn_id\"}; status\n\"duplicate\" means an identical retry was already accepted. HTTP 409: the\nturn is stale or cancelled, so do not reuse this context. HTTP 410: the\ncall ended; stop working on this request.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -868,10 +868,10 @@
                   "type": "null"
                 }
               ],
-              "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header or a push_token body field.",
+              "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header.",
               "title": "Token"
             },
-            "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header or a push_token body field."
+            "description": "The push_token from the call.utterance or call.task.open event. Authorizes this push for that call; same as the X-Push-Token header."
           },
           {
             "name": "turn_id",
@@ -886,10 +886,10 @@
                   "type": "null"
                 }
               ],
-              "description": "The exact turn_id from the event, identifying the question being answered. Can also be sent in the body. Required except for disposition=facts.",
+              "description": "The exact turn_id from the event, identifying the question being answered. Required except for disposition=facts.",
               "title": "Turn Id"
             },
-            "description": "The exact turn_id from the event, identifying the question being answered. Can also be sent in the body. Required except for disposition=facts."
+            "description": "The exact turn_id from the event, identifying the question being answered. Required except for disposition=facts."
           },
           {
             "name": "X-Push-Token",
@@ -913,9 +913,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "additionalProperties": true,
-                "title": "Body"
+                "$ref": "#/components/schemas/CallContextPush"
               }
             }
           }
@@ -1247,7 +1245,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
               }
             }
           },
@@ -2382,6 +2382,40 @@
         "type": "object",
         "title": "CallContext"
       },
+      "CallContextPush": {
+        "properties": {
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context",
+            "description": "The facts for the caller, in plain text, e.g. \"John emailed yesterday about an invoice.\" The hosted voice rephrases them. Required unless disposition is noop."
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "partial",
+              "progress",
+              "done",
+              "failed",
+              "noop",
+              "facts"
+            ],
+            "title": "Disposition",
+            "description": "What this push does with the open task. partial: one real fact so far, spoken now, task stays open. progress: a note for the voice, not spoken, task stays open. done (default): final facts, settles the task. failed: could not do it, settles the task. noop: settle the task with nothing to say; context not needed. facts: a briefing for the whole call at any time, no turn_id needed.",
+            "default": "done"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "title": "CallContextPush",
+        "description": "Body of push_call_context. Extra keys are accepted for runtime SDKs\nthat send context under another name; MCP clients use these two."
+      },
       "CallRequest": {
         "properties": {
           "agent_id": {
@@ -3214,6 +3248,69 @@
           "url"
         ],
         "title": "KeylessWebhookBody"
+      },
+      "MessageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Message identifier (e.g. 'msg_abc123')"
+          },
+          "conversation_id": {
+            "type": "string",
+            "title": "Conversation Id",
+            "description": "Thread this message belongs to; pass to list_messages to read the exchange"
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id",
+            "description": "AI agent that sent the message"
+          },
+          "from_number": {
+            "type": "string",
+            "title": "From Number",
+            "description": "Sending phone number in E.164 format"
+          },
+          "to_number": {
+            "type": "string",
+            "title": "To Number",
+            "description": "Destination phone number in E.164 format"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body",
+            "description": "SMS text that was sent"
+          },
+          "direction": {
+            "type": "string",
+            "title": "Direction",
+            "description": "Always 'outbound' for a sent message"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Carrier delivery status at send time (e.g. 'sent', 'queued')"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "When the message was sent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "conversation_id",
+          "agent_id",
+          "from_number",
+          "to_number",
+          "body",
+          "direction",
+          "status",
+          "created_at"
+        ],
+        "title": "MessageOut"
       },
       "MessageSend": {
         "properties": {
