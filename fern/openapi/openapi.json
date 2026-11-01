@@ -1687,14 +1687,80 @@
           "Voice"
         ],
         "summary": "Get Available Voices",
-        "description": "List all available voice presets for AI phone agents.\n\nReturns named TTS (text-to-speech) voice presets that can be used\nwhen configuring AI agents or making phone calls. Each voice defines\nhow your AI agent sounds on the phone.\n\nReturns {\"voices\": [...], \"default_voice_id\", \"usage_hint\"}: each voice\nhas preset_name (e.g. \"female-1\"), voice_id (UUID), name and description.\nPass either preset_name or voice_id as voice_id to create_agent,\nupdate_agent, make_outbound_call or set_account_voice.",
+        "description": "List the voices an AI phone agent can speak with.\n\nReturns the six built-in voices — female-1, female-2, female-3, male-1,\nmale-2, male-3 — plus the speech languages an agent can be pinned to and\nthe speaking-speed range. The owner can pick from many more voices\n(accents and languages) in the AgentLine dashboard; an agent set to one\nof those keeps it.\n\nReturns {\"voices\": [...], \"languages\": [...], \"speaking_speed\": {...},\n\"default_voice_id\", \"usage_hint\"}. Each voice has preset_name\n(e.g. \"female-1\"), voice_id, name, tagline, description, gender, accent,\nlocale, language and has_preview.\nPass either preset_name or voice_id as voice_id to create_agent,\nupdate_agent, make_outbound_call or set_account_voice.",
         "operationId": "list_available_voices",
+        "parameters": [
+          {
+            "name": "gender",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "feminine | masculine | neutral",
+              "title": "Gender"
+            },
+            "description": "feminine | masculine | neutral"
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Language ('en') or locale ('en-GB') to filter by.",
+              "title": "Language"
+            },
+            "description": "Language ('en') or locale ('en-GB') to filter by."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Free-text search over name, tagline, description and accent.",
+              "title": "Q"
+            },
+            "description": "Free-text search over name, tagline, description and accent."
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -2030,7 +2096,33 @@
               }
             ],
             "title": "Voice Id",
-            "description": "TTS voice preset name (e.g. 'female-1', 'male-1') or a voice UUID; defaults to system voice if not set"
+            "description": "Voice the agent speaks with: a voice_id from list_available_voices or a legacy preset name (e.g. 'female-1'); defaults to the system voice if not set"
+          },
+          "speech_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speech Language",
+            "description": "BCP-47 locale the agent listens and speaks in, e.g. 'en-US', 'hi-IN'. 'auto' (or unset) keeps multilingual auto-detection. Allowed values are listed under 'languages' by list_available_voices."
+          },
+          "speaking_speed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.5,
+                "minimum": 0.6
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaking Speed",
+            "description": "Speaking pace multiplier from 0.6 (slower) to 1.5 (faster); 1.0 is the voice's natural pace."
           },
           "transfer_number": {
             "anyOf": [
@@ -2159,7 +2251,31 @@
               }
             ],
             "title": "Voice Id",
-            "description": "TTS voice preset or voice UUID"
+            "description": "Voice the agent speaks with (voice_id or legacy preset name)"
+          },
+          "speech_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speech Language",
+            "description": "Pinned speech locale, or null for multilingual auto-detection"
+          },
+          "speaking_speed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaking Speed",
+            "description": "Speaking pace multiplier; null means the natural pace (1.0)"
           },
           "transfer_number": {
             "anyOf": [
@@ -2261,7 +2377,33 @@
               }
             ],
             "title": "Voice Id",
-            "description": "New TTS voice preset name or voice UUID"
+            "description": "New voice: a voice_id from list_available_voices or a legacy preset name"
+          },
+          "speech_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speech Language",
+            "description": "BCP-47 locale the agent listens and speaks in, e.g. 'en-US', 'hi-IN'. 'auto' (or unset) keeps multilingual auto-detection. Allowed values are listed under 'languages' by list_available_voices. Send null to go back to auto-detection."
+          },
+          "speaking_speed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.5,
+                "minimum": 0.6
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaking Speed",
+            "description": "Speaking pace multiplier from 0.6 (slower) to 1.5 (faster); 1.0 is the voice's natural pace. Send null to go back to 1.0."
           },
           "transfer_number": {
             "anyOf": [
