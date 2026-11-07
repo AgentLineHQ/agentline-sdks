@@ -1839,7 +1839,7 @@
           "Webhooks"
         ],
         "summary": "Set Webhook",
-        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; setting it again replaces the URL. Omitted secret,\nsignature_header, protocol and capabilities keep their current values.\n\nReturns agent_id, url, the full secret (shown only here; get_webhook\nmasks it), signature_header, protocol, capabilities and created_at.\nStore the secret to verify the signature header on deliveries.",
+        "description": "Create or replace an agent's webhook.\n\nThe configured URL receives ALL of that agent's event types — call lifecycle\n(`call.received`, `call.completed`, `call.failed`), SMS (`sms.received`),\nand future events — as signed JSON POSTs. Each agent may have at most one\nwebhook; setting it again replaces the URL. Omitted secret,\nsignature_header, protocol and capabilities keep their current values.\n\nReturns agent_id, url, the full secret (shown only here; get_webhook\nmasks it), signature_header, protocol, capabilities, headers and\ncreated_at. Store the secret to verify the signature header on deliveries.\n\n`headers` adds the receiver's own credential to every delivery, e.g.\n{\"Authorization\": \"Bearer <key>\"} for a Grok Bot (Cursor) webhook routine.",
         "operationId": "set_webhook",
         "security": [
           {
@@ -2019,6 +2019,20 @@
               }
             ],
             "title": "Signature Header"
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers"
           }
         },
         "type": "object",
@@ -2476,6 +2490,20 @@
               }
             ],
             "title": "Signature Header"
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers"
           }
         },
         "additionalProperties": false,
@@ -3382,6 +3410,21 @@
             ],
             "title": "Signature Header",
             "description": "HMAC header name (default 'X-Webhook-Signature')"
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers",
+            "description": "Extra headers sent with every delivery, e.g. {\"Authorization\": \"Bearer <key>\"} for a receiver that needs its own credential. Omit to keep; {} clears. Masked on reads."
           }
         },
         "type": "object",
@@ -3761,6 +3804,21 @@
               }
             ],
             "description": "Relay v2 capabilities. Omit to keep the existing value when updating."
+          },
+          "headers": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headers",
+            "description": "Extra HTTP headers sent with every delivery, as {name: value}. Use this when the receiver needs its own credential: for example {\"Authorization\": \"Bearer <key>\"} for a Grok Bot (Cursor) webhook routine, or an API-key header for n8n, Make or Zapier. Values are returned in full only by this call and masked on reads. Omit to keep the current headers when updating; pass {} to remove them all. At most 10 headers; Content-Type, Host, X-AgentLine-* and the signature header cannot be set here."
           }
         },
         "type": "object",
@@ -3803,6 +3861,14 @@
             "type": "object",
             "title": "Capabilities",
             "description": "Declared relay v2 capabilities."
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Headers",
+            "description": "Custom delivery headers with full values. Masked on subsequent reads."
           },
           "created_at": {
             "anyOf": [
