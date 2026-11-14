@@ -2460,6 +2460,52 @@
         "type": "object",
         "title": "AgentUpdate"
       },
+      "AgentVoiceUpdate": {
+        "properties": {
+          "voice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Id",
+            "description": "Voice the agent speaks with"
+          },
+          "speech_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speech Language",
+            "description": "BCP-47 locale the agent listens and speaks in, e.g. 'en-US', 'hi-IN'. 'auto' (or unset) keeps multilingual auto-detection. Allowed values are listed under 'languages' by list_available_voices. null goes back to auto-detection."
+          },
+          "speaking_speed": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.5,
+                "minimum": 0.6
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaking Speed",
+            "description": "Speaking pace multiplier from 0.6 (slower) to 1.5 (faster); 1.0 is the voice's natural pace. null goes back to 1.0."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AgentVoiceUpdate",
+        "description": "The dashboard's Voice & audio settings: only the keys sent are written."
+      },
       "ApiKeyWebhookConfig": {
         "properties": {
           "url": {
