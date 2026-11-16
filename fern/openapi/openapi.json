@@ -2625,6 +2625,25 @@
             "title": "Disposition",
             "description": "What this push does with the open task. partial: one real fact so far, spoken now, task stays open. progress: a note for the voice, not spoken, task stays open. done (default): final facts, settles the task. failed: could not do it, settles the task. noop: settle the task with nothing to say; context not needed. facts: a briefing for the whole call at any time, no turn_id needed.",
             "default": "done"
+          },
+          "remember": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remember",
+            "description": "With done or facts: keep this answer so the hosted voice can answer the same question at once on later calls, without asking you. \"everyone\": true for any caller (hours, prices, policies); add \" static\" if it rarely changes. \"caller\": about this call's number only (their appointment, order). Omit for anything one-off or private to someone else. Keys and expiry are handled for you. Ignored unless the knowledge store is on for the agent."
           }
         },
         "additionalProperties": true,
@@ -2736,6 +2755,132 @@
           "phone_number"
         ],
         "title": "ContactCreate"
+      },
+      "ContactFactList": {
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/ContactFactOut"
+            },
+            "type": "array",
+            "title": "Facts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phone_number",
+          "facts"
+        ],
+        "title": "ContactFactList"
+      },
+      "ContactFactOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "agent_id",
+          "phone_number",
+          "key",
+          "value",
+          "source",
+          "created_at",
+          "updated_at",
+          "expires_at"
+        ],
+        "title": "ContactFactOut"
+      },
+      "ContactFactWrite": {
+        "properties": {
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number",
+            "description": "The person's number with a leading + and country code, e.g. '+12125551234'."
+          },
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "What the detail is, e.g. 'appointment' or 'last-order'. Lowercase letters, digits, dot, colon, dash, underscore. Saving the same key for the same number replaces the detail."
+          },
+          "value": {
+            "type": "string",
+            "maxLength": 400,
+            "title": "Value",
+            "description": "The detail, e.g. 'Tuesday 17 November, 10:00 AM'. Used only on calls with this number."
+          },
+          "ttl_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 31622400.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ttl Seconds",
+            "description": "Rarely needed. Seconds until the detail stops being used. Omit to keep it until changed."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phone_number",
+          "key",
+          "value"
+        ],
+        "title": "ContactFactWrite"
       },
       "ContactList": {
         "properties": {
@@ -3479,6 +3624,278 @@
           "url"
         ],
         "title": "KeylessWebhookBody"
+      },
+      "KnowledgeFactList": {
+        "properties": {
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeFactOut"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facts",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "KnowledgeFactList"
+      },
+      "KnowledgeFactOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "agent_id": {
+            "type": "string",
+            "title": "Agent Id"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "embedded": {
+            "type": "boolean",
+            "title": "Embedded",
+            "description": "False when the fact could not be embedded; it is then found by keyword only and never used on a call until saved again."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "replaced": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced",
+            "description": "Key of the stored fact this save overwrote, if any."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "agent_id",
+          "key",
+          "text",
+          "kind",
+          "source",
+          "embedded",
+          "created_at",
+          "updated_at",
+          "expires_at"
+        ],
+        "title": "KnowledgeFactOut"
+      },
+      "KnowledgeFactSave": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Text",
+            "description": "One self-contained fact in plain text, e.g. 'Probiotic Plus bird gut powder costs $24.95.' Callers of this agent may hear it, so store nothing about one person here."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "static",
+              "changing"
+            ],
+            "title": "Kind",
+            "description": "static: true until you change it (hours, policies). changing (default): goes stale (stock, prices) and stops being used after ttl_seconds.",
+            "default": "changing"
+          },
+          "ttl_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 31622400.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ttl Seconds",
+            "description": "Rarely needed. Seconds until the fact stops being used. Omit it and the service decides: about a day for changing, about a month for static."
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key",
+            "description": "Optional name for this fact, e.g. 'hours'. Omit it: a stored fact that says nearly the same thing is replaced, so a corrected fact does not sit beside the old one. Pass a key only to replace one exact fact."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "KnowledgeFactSave",
+        "description": "Body of remember_fact: the key is optional."
+      },
+      "KnowledgeFactWrite": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Text",
+            "description": "One self-contained fact in plain text, e.g. 'Probiotic Plus bird gut powder costs $24.95.' Callers of this agent may hear it, so store nothing about one person here."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "static",
+              "changing"
+            ],
+            "title": "Kind",
+            "description": "static: true until you change it (hours, policies). changing (default): goes stale (stock, prices) and stops being used after ttl_seconds.",
+            "default": "changing"
+          },
+          "ttl_seconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 31622400.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ttl Seconds",
+            "description": "Rarely needed. Seconds until the fact stops being used. Omit it and the service decides: about a day for changing, about a month for static."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "KnowledgeFactWrite"
+      },
+      "KnowledgeMatch": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity"
+          },
+          "keyword": {
+            "type": "boolean",
+            "title": "Keyword"
+          },
+          "would_answer": {
+            "type": "boolean",
+            "title": "Would Answer",
+            "description": "True when this fact clears the threshold a live call uses."
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "text",
+          "kind",
+          "similarity",
+          "keyword",
+          "would_answer"
+        ],
+        "title": "KnowledgeMatch"
+      },
+      "KnowledgeSearchResult": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeMatch"
+            },
+            "type": "array",
+            "title": "Matches"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "matches"
+        ],
+        "title": "KnowledgeSearchResult"
       },
       "MessageOut": {
         "properties": {
