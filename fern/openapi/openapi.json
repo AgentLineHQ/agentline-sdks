@@ -841,7 +841,7 @@
           "Calls"
         ],
         "summary": "Push Call Context",
-        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nA call.utterance or call.task.open event means a live caller is waiting.\nDo the work, then push the facts; they reach the call immediately. The\nhosted voice phrases them in its own words (it never reads your text\naloud) and keeps them for the rest of the call.\n\nArguments: call_id, turn_id and token from the event; context (the\nfacts) and disposition (partial, progress, done, failed, noop or facts).\ncontext is required unless disposition is noop. turn_id is required\nunless disposition is facts.\n\nAuth: pass the event's push_token as token. An AgentLine API key as\nAuthorization: Bearer also works; OAuth tokens do not.\n\nReturns {\"delivered\": true, \"status\", \"call_id\", \"turn_id\"}; status\n\"duplicate\" means an identical retry was already accepted. HTTP 409: the\nturn is stale or cancelled, so do not reuse this context. HTTP 410: the\ncall ended; stop working on this request.",
+        "description": "Push context into a LIVE relay-mode call (mid-call context injection).\n\nA call.utterance or call.task.open event means a live caller is waiting.\nDo the work, then push the facts; they reach the call immediately. The\nhosted voice phrases them in its own words (it never reads your text\naloud) and keeps them for the rest of the call.\n\nArguments: call_id, turn_id and token from the event; context (the\nfacts) and disposition (partial, progress, done, failed, noop or facts).\ncontext is required unless disposition is noop. turn_id is required\nunless disposition is facts.\n\nOptional remember, with done or facts: keeps the answer in the agent's\nknowledge store so the hosted voice answers the same question itself on\nlater calls. \"everyone\" (any caller may hear it), \"everyone static\"\n(rarely changes) or \"caller\" (this call's number only).\n\nAuth: pass the event's push_token as token. An AgentLine API key as\nAuthorization: Bearer also works; OAuth tokens do not.\n\nReturns {\"delivered\": true, \"status\", \"call_id\", \"turn_id\"}; status\n\"duplicate\" means an identical retry was already accepted. HTTP 409: the\nturn is stale or cancelled, so do not reuse this context. HTTP 410: the\ncall ended; stop working on this request.",
         "operationId": "push_call_context",
         "parameters": [
           {
@@ -3769,6 +3769,19 @@
             "title": "Ttl Seconds",
             "description": "Rarely needed. Seconds until the fact stops being used. Omit it and the service decides: about a day for changing, about a month for static."
           },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question",
+            "description": "Optional. A question this fact answers, as a caller would ask it, e.g. 'Do you deliver?'. It makes the fact easier to find when a caller asks that question. It is not stored or spoken."
+          },
           "key": {
             "anyOf": [
               {
@@ -3821,6 +3834,19 @@
             ],
             "title": "Ttl Seconds",
             "description": "Rarely needed. Seconds until the fact stops being used. Omit it and the service decides: about a day for changing, about a month for static."
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question",
+            "description": "Optional. A question this fact answers, as a caller would ask it, e.g. 'Do you deliver?'. It makes the fact easier to find when a caller asks that question. It is not stored or spoken."
           }
         },
         "additionalProperties": false,
