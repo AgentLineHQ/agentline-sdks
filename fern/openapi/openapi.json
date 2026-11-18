@@ -2160,7 +2160,7 @@
               }
             ],
             "title": "Voicemail Message",
-            "description": "Message the AI agent leaves if the call goes to voicemail"
+            "description": "Exact message the AI agent leaves if an outbound call goes to voicemail. Optional: when empty, each outbound call leaves a message written from that call's prompt."
           },
           "owner_phone": {
             "anyOf": [
