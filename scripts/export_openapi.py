@@ -51,6 +51,12 @@ SDK_SURFACE: dict[str, tuple[str, str]] = {
     "get_agent": ("agents", "get"),
     "update_agent": ("agents", "update"),
     "delete_agent": ("agents", "delete"),
+    # Contacts (each agent's own contact list)
+    "create_contact": ("contacts", "create"),
+    "list_contacts": ("contacts", "list"),
+    "get_contact": ("contacts", "get"),
+    "update_contact": ("contacts", "update"),
+    "delete_contact": ("contacts", "delete"),
     # Numbers
     "buy_phone_number": ("numbers", "buy"),
     "list_phone_numbers": ("numbers", "list"),
@@ -161,8 +167,8 @@ def build_spec(raw: dict, server_url: str) -> dict:
             "AgentLine gives every AI agent a real phone number, a "
             "human-like voice, and the ability to make and receive calls "
             "and SMS autonomously. This SDK covers the core developer "
-            "surface: agents, numbers, calls, messages, events, webhooks, "
-            "billing, and voice."
+            "surface: agents, contacts, numbers, calls, messages, events, "
+            "webhooks, billing, and voice."
         ),
         "contact": {"name": "AgentLine", "url": "https://agentline.cloud"},
         "license": {"name": "MIT", "url": "https://opensource.org/license/mit"},

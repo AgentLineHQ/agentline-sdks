@@ -38,8 +38,8 @@ fern/openapi/openapi.json  (curated spec — committed)
         └─► github.com/AgentLineHQ/agentline-node    →  npm `agentline`
 ```
 
-The curated spec keeps only the **core developer surface**: agents, numbers,
-calls, messages, events, webhooks, billing, and voice. Internal endpoints
+The curated spec keeps only the **core developer surface**: agents, contacts,
+numbers, calls, messages, events, webhooks, billing, and voice. Internal endpoints
 (SignalWire callbacks, debug/health, the email-OTP auth flow, x402 crypto
 top-ups) are excluded so they never reach the SDK.
 
