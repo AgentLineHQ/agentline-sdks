@@ -638,7 +638,7 @@
           "Calls"
         ],
         "summary": "Create Call",
-        "description": "Make an outbound phone call from your AI agent.\n\nDials a real person or business from the agent's number. The agent holds\nthe whole conversation on its own with its system prompt, voice and\ngreeting (or this call's overrides). The call reaches a third party and\nis billed to the account at $0.12 per minute, first minute charged in\nfull, so confirm with the user first. Not idempotent: every successful\ncall dials again.\n\nPrerequisites: an agent with an active number from buy_phone_number\n(HTTP 400 otherwise), plus remaining subscription minutes or at least\n$0.50 of wallet balance (HTTP 402 otherwise). Included minutes are used\nfirst; only uncovered call time is charged to the wallet.\n\nReturns right after dialing with the call id (call_...), agent_id,\nfrom_number, to_number, direction, status and started_at; the call runs\non its own. Check get_call_details for progress and call\nget_call_transcript once status is completed.",
+        "description": "Make an outbound phone call from your AI agent.\n\nDials a real person or business from the agent's number. The agent holds\nthe whole conversation on its own with its system prompt, voice and\ngreeting (or this call's overrides). The call reaches a third party and\nis billed to the account at $0.12 per minute, first minute charged in\nfull, so confirm with the user first. Not idempotent: every successful\ncall dials again.\n\nPrerequisites: an agent with an active number from buy_phone_number\n(HTTP 400 otherwise), plus remaining subscription minutes or at least\n$0.50 of wallet balance (HTTP 402 otherwise). Included minutes are used\nfirst; only uncovered call time is charged to the wallet.\n\nReturns right after dialing with the call id (call_...), agent_id,\nfrom_number, to_number, direction, status and started_at; the call runs\non its own. Check get_call_details for progress and call\nget_call_transcript once status is completed.\n\nTest line: any +1 555 number (e.g. +15555550100) reaches no one. The call\nis not dialled or billed; it returns status 'completed' with test=true\nand a short transcript, and fires call.completed. Use it to test.",
         "operationId": "make_outbound_call",
         "security": [
           {
@@ -1223,7 +1223,7 @@
           "Messages"
         ],
         "summary": "Send Message",
-        "description": "Send an outbound SMS message from an AI agent's phone number.\n\nEach account can send 250 texts per UTC day across all its agents,\nunless the account has a raised limit.",
+        "description": "Send an outbound SMS message from an AI agent's phone number.\n\nEach account can send 250 texts per UTC day across all its agents,\nunless the account has a raised limit.\n\nTest line: any +1 555 number (e.g. +15555550100) reaches no one. The text\nis not sent or billed and returns status 'delivered' with test=true; the\ntest line then texts back once, which arrives as sms.received.",
         "operationId": "send_sms",
         "security": [
           {
@@ -2662,7 +2662,7 @@
             "type": "string",
             "pattern": "^\\+[1-9]\\d{7,14}$",
             "title": "To Number",
-            "description": "Destination phone number in E.164 format (e.g. '+12125551234')"
+            "description": "Destination phone number in E.164 format (e.g. '+12125551234'). Any +1 555 number, e.g. '+15555550100', is the test line: not dialled or billed."
           },
           "system_prompt": {
             "anyOf": [
@@ -3970,6 +3970,18 @@
             "format": "date-time",
             "title": "Created At",
             "description": "When the message was sent"
+          },
+          "test": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Test",
+            "description": "True when sent to the test line (any +1 555 number): nothing was sent or billed"
           }
         },
         "type": "object",
@@ -3996,7 +4008,7 @@
           "to_number": {
             "type": "string",
             "title": "To Number",
-            "description": "Destination phone number in E.164 format (e.g. '+12125551234')"
+            "description": "Destination phone number in E.164 format (e.g. '+12125551234'). Any +1 555 number, e.g. '+15555550100', is the test line: not sent or billed, and it texts back once."
           },
           "body": {
             "type": "string",
